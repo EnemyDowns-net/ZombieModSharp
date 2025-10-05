@@ -4,11 +4,11 @@ using ZombieModSharp.Interface.Player;
 
 namespace ZombieModSharp.Core.Player;
 
-public class PlayerManager : IPlayerManager
+public class Player: IPlayer
 {
     private Dictionary<IGameClient, ZMPlayer> Players { get; set; } = new();
 
-    public PlayerManager()
+    public Player()
     {
         Players = new Dictionary<IGameClient, ZMPlayer>();
     }

@@ -3,7 +3,7 @@ using ZombieModSharp.Entities;
 
 namespace ZombieModSharp.Interface.Player;
 
-public interface IPlayerManager
+public interface IPlayer
 {
     public ZMPlayer GetPlayer(IGameClient client);
     public Dictionary<IGameClient, ZMPlayer> GetAllPlayers();

@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using PlayerManager_Shared.Abstractions;
 using Sharp.Shared;
 using Sharp.Shared.Listeners;
 using Sharp.Shared.Managers;
@@ -26,8 +27,11 @@ public sealed class ZombieModSharp : IModSharpModule
     private readonly ServiceProvider  _serviceProvider;
     private readonly ISharedSystem _sharedSystem;
     private readonly IEvents _eventListener;
-    private readonly IPlayerManager _playerManager;
+    private readonly IPlayer _player;
     private readonly IInfect _infect;
+
+    // outside modules
+    private IPlayerManager? _playerManager;
 
     public ZombieModSharp(ISharedSystem sharedSystem,
                       string dllPath,
@@ -57,9 +61,9 @@ public sealed class ZombieModSharp : IModSharpModule
         _serviceProvider = services.BuildServiceProvider();
 
         // Initial our stuff.
-        _playerManager = new PlayerManager();
-        _infect = new Infect(_bridge.EntityManager, _bridge.EventManager, _serviceProvider.GetRequiredService<ILogger<Infect>>(), _playerManager, _bridge.GameRules);
-        _eventListener = new Events(_bridge.EventManager, _serviceProvider.GetRequiredService<ILogger<Events>>(), _bridge.ClientManager, _playerManager, _bridge.EntityManager, _infect);
+        _player = new Player();
+        _infect = new Infect(_bridge.EntityManager, _bridge.EventManager, _serviceProvider.GetRequiredService<ILogger<Infect>>(), _player, _bridge.GameRules);
+        _eventListener = new Events(_bridge.EventManager, _serviceProvider.GetRequiredService<ILogger<Events>>(), _bridge.ClientManager, _player, _bridge.EntityManager, _infect);
     }
 
     public bool Init()
@@ -87,7 +91,10 @@ public sealed class ZombieModSharp : IModSharpModule
 
     public void OnAllModulesLoaded()
     {
-        _logger.LogInformation("A foolish sage or a wise fool... Who will I become next?");
+        var wrapper = _sharedSystem.GetSharpModuleManager()
+                .GetRequiredSharpModuleInterface<IPlayerManager>(IPlayerManager.Identity);
+            _playerManager = wrapper.Instance
+                             ?? throw new InvalidOperationException("PlayerManager_Shared 介面不可為 null");
     }
 
     public void OnLibraryConnected(string name)
@@ -97,6 +104,10 @@ public sealed class ZombieModSharp : IModSharpModule
 
     public void OnLibraryDisconnect(string name)
     {
-        _logger.LogInformation("Done playing for today...");
+        if (name == "PlayerManager")
+        {
+            _logger.LogWarning("PlayerManager get excluded or become invalid");
+            _playerManager = null;
+        }
     }
 }

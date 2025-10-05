@@ -16,7 +16,7 @@ public class Events : IEvents, IEventListener
     private readonly IEventManager _eventManager;
     private readonly ILogger<Events> _logger;
     private readonly IClientManager _clientManager;
-    private readonly IPlayerManager _playerManager;
+    private readonly IPlayer _player;
     private readonly IEntityManager _entityManager;
     private readonly IInfect _infect;
 
@@ -25,12 +25,12 @@ public class Events : IEvents, IEventListener
 
     public bool RoundEnded { get; private set; } = false;
 
-    public Events(IEventManager eventManager, ILogger<Events> logger, IClientManager clientManager, IPlayerManager playerManager, IEntityManager entityManager, IInfect infect)
+    public Events(IEventManager eventManager, ILogger<Events> logger, IClientManager clientManager, IPlayer player, IEntityManager entityManager, IInfect infect)
     {
         _eventManager = eventManager;
         _logger = logger;
         _clientManager = clientManager;
-        _playerManager = playerManager;
+        _player = player;
         _infect = infect;
         _entityManager = entityManager;
     }
@@ -90,7 +90,7 @@ public class Events : IEvents, IEventListener
 
         if (clientController.Team == CStrikeTeam.CT && attackerController.Team == CStrikeTeam.TE)
         {
-            var zmPlayer = _playerManager.GetPlayer(attackerClient);
+            var zmPlayer = _player.GetPlayer(attackerClient);
 
             if (zmPlayer.IsInfected)
             {

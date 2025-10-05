@@ -15,17 +15,17 @@ public class Infect : IInfect
     private readonly IEntityManager _entityManager;
     private readonly IEventManager _eventManager;
     private readonly ILogger<Infect> _logger;
-    private readonly IPlayerManager _playerManager;
+    private readonly IPlayer _player;
     private readonly IGameRules _gameRules;
 
     private bool InfectStarted = false;
 
-    public Infect(IEntityManager entityManager, IEventManager eventManager, ILogger<Infect> logger, IPlayerManager playerManager, IGameRules gameRules)
+    public Infect(IEntityManager entityManager, IEventManager eventManager, ILogger<Infect> logger, IPlayer player, IGameRules gameRules)
     {
         _entityManager = entityManager;
         _eventManager = eventManager;
         _logger = logger;
-        _playerManager = playerManager;
+        _player = player;
         _gameRules = gameRules;
     }
 
@@ -39,7 +39,7 @@ public class Infect : IInfect
         var clientController = _entityManager.FindPlayerControllerBySlot(client.Slot);
         clientController?.SwitchTeam(CStrikeTeam.TE);
 
-        var zmPlayer = _playerManager.GetPlayer(client);
+        var zmPlayer = _player.GetPlayer(client);
         zmPlayer.IsInfected = true;
 
         if (attacker == null)
@@ -76,7 +76,7 @@ public class Infect : IInfect
     {
         InfectStarted = false;
 
-        var allPlayers = _playerManager.GetAllPlayers();
+        var allPlayers = _player.GetAllPlayers();
 
         foreach (var kvp in allPlayers)
         {
@@ -100,7 +100,7 @@ public class Infect : IInfect
         {
             return;
         }
-        var allPlayers = _playerManager.GetAllPlayers();
+        var allPlayers = _player.GetAllPlayers();
 
         int ctCount = 0;
         int tCount = 0;
