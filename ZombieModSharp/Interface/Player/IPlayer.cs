@@ -7,4 +7,5 @@ public interface IPlayer
 {
     public ZMPlayer GetPlayer(IGameClient client);
     public Dictionary<IGameClient, ZMPlayer> GetAllPlayers();
+    public void RemovePlayer(IGameClient client);
 }

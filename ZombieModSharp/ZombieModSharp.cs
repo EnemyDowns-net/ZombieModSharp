@@ -13,6 +13,7 @@ using ZombieModSharp.Core.Infection;
 using ZombieModSharp.Core.Player;
 using ZombieModSharp.Interface.Events;
 using ZombieModSharp.Interface.Infection;
+using ZombieModSharp.Interface.Listeners;
 using ZombieModSharp.Interface.Player;
 
 namespace ZombieModSharp;
@@ -29,6 +30,7 @@ public sealed class ZombieModSharp : IModSharpModule
     private readonly IEvents _eventListener;
     private readonly IPlayer _player;
     private readonly IInfect _infect;
+    private readonly IListeners _listeners;
 
     // outside modules
     private IPlayerManager? _playerManager;
@@ -64,6 +66,7 @@ public sealed class ZombieModSharp : IModSharpModule
         _player = new Player();
         _infect = new Infect(_bridge.EntityManager, _bridge.EventManager, _serviceProvider.GetRequiredService<ILogger<Infect>>(), _player, _bridge.GameRules);
         _eventListener = new Events(_bridge.EventManager, _serviceProvider.GetRequiredService<ILogger<Events>>(), _bridge.ClientManager, _player, _bridge.EntityManager, _infect);
+        _listeners = new Listeners(_player);
     }
 
     public bool Init()
