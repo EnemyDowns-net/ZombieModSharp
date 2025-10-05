@@ -24,7 +24,7 @@ public sealed class ZombieModSharp : IModSharpModule
     public string DisplayAuthor => "Oylsister";
 
     private readonly ILogger<ZombieModSharp> _logger;
-    private readonly InterfaceBridge  _bridge;
+    // private readonly InterfaceBridge  _bridge;
     private readonly ServiceProvider  _serviceProvider;
     private readonly ISharedSystem _sharedSystem;
     private readonly IEvents _eventListener;
@@ -39,7 +39,7 @@ public sealed class ZombieModSharp : IModSharpModule
                       string dllPath,
                       string sharpPath,
                       Version? version,
-                      IConfiguration coreConfiguration,
+                      IConfiguration? coreConfiguration,
                       bool hotReload)
     {
         ArgumentNullException.ThrowIfNull(dllPath);
@@ -48,32 +48,28 @@ public sealed class ZombieModSharp : IModSharpModule
         ArgumentNullException.ThrowIfNull(coreConfiguration);
 
         _sharedSystem = sharedSystem ?? throw new ArgumentNullException(nameof(sharedSystem));
-        var configuration = new ConfigurationBuilder()
-                            .AddJsonFile(Path.Combine(dllPath, "appsettings.json"), false, false)
-                            .Build();
+        //var configuration = new ConfigurationBuilder().AddJsonFile(Path.Combine(dllPath, "appsettings.json"), false, false).Build();
 
         var services = new ServiceCollection();
 
-        services.AddSingleton<IConfiguration>(configuration);
         services.AddSingleton(sharedSystem.GetLoggerFactory());
         services.TryAdd(ServiceDescriptor.Singleton(typeof(ILogger<>), typeof(Logger<>)));
 
-        _bridge = new InterfaceBridge(dllPath, sharpPath, version, sharedSystem);
+        // _bridge = new InterfaceBridge(dllPath, sharpPath, version, sharedSystem);
         _logger = sharedSystem.GetLoggerFactory().CreateLogger<ZombieModSharp>();
         _serviceProvider = services.BuildServiceProvider();
 
         // Initial our stuff.
         _player = new Player();
-        _infect = new Infect(_bridge.EntityManager, _bridge.EventManager, _serviceProvider.GetRequiredService<ILogger<Infect>>(), _player, _bridge.GameRules);
-        _eventListener = new Events(_bridge.EventManager, _serviceProvider.GetRequiredService<ILogger<Events>>(), _bridge.ClientManager, _player, _bridge.EntityManager, _infect);
-        _listeners = new Listeners(_player);
+        _infect = new Infect(_sharedSystem.GetEntityManager(), _sharedSystem.GetEventManager(), _serviceProvider.GetRequiredService<ILogger<Infect>>(), _player, _sharedSystem.GetModSharp());
+        _eventListener = new Events(_sharedSystem.GetEventManager(), _serviceProvider.GetRequiredService<ILogger<Events>>(), _sharedSystem.GetClientManager(), _player, _sharedSystem.GetEntityManager(), _infect, _sharedSystem.GetModSharp());
+        _listeners = new Listeners(_player, _serviceProvider.GetRequiredService<ILogger<Listeners>>());
     }
 
     public bool Init()
     {
         _logger.LogInformation(
             "Oh wow, we seem to be crossing paths a lot lately... Where could I have seen you before? Can you figure it out?");
-        _bridge.ModSharp.GetGameRules();
         return true;
     }
 
@@ -90,6 +86,9 @@ public sealed class ZombieModSharp : IModSharpModule
         eventManager.InstallEventListener((IEventListener)_eventListener);
 
         _eventListener.RegisterEvents();
+
+        var clientManager = _sharedSystem.GetClientManager();
+        clientManager.InstallClientListener((IClientListener)_listeners);
     }
 
     public void OnAllModulesLoaded()

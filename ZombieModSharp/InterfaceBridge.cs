@@ -33,7 +33,6 @@ internal sealed class InterfaceBridge
     public IModSharp            ModSharp          { get; }
     public IPhysicsQueryManager PhysicsQuery      { get; }
     public IGameData            GameData          { get; }
-    public IGameRules           GameRules         { get; }
     public ILoggerFactory       LoggerFactory     { get; }
 
     private readonly ILogger<InterfaceBridge> _logger;
@@ -60,7 +59,6 @@ internal sealed class InterfaceBridge
         ModSharp        = sharedSystem.GetModSharp();
         PhysicsQuery    = sharedSystem.GetPhysicsQueryManager();
         GameData        = sharedSystem.GetModSharp().GetGameData();
-        GameRules       = sharedSystem.GetModSharp().GetGameRules();
         LoggerFactory   = sharedSystem.GetLoggerFactory();
         FileVersion     = FileVersionInfo.GetVersionInfo(Path.Combine(dllPath, "ZombieModSharp.dll"));
         FileTime        = GetSelfDBuildTime(dllPath);

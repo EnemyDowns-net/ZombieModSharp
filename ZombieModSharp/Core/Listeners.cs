@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Sharp.Shared.Listeners;
 using Sharp.Shared.Managers;
 using Sharp.Shared.Objects;
@@ -12,24 +13,23 @@ public class Listeners : IListeners, IClientListener
     public int ListenerPriority => 0;
 
     private readonly IPlayer _player;
+    private readonly ILogger<Listeners> _logger;
 
-    public Listeners(IPlayer player)
+    public Listeners(IPlayer player, ILogger<Listeners> logger)
     {
         _player = player;
+        _logger = logger;
     }
 
-    public void RegisterListners()
+    public void OnClientPutInServer(IGameClient client)
     {
-
-    }
-
-    void OnClientPutInServer(IGameClient client)
-    {
+        _logger.LogInformation("ClientPutInServer: {Name}", client.Name);
         _player.GetPlayer(client);
     }
 
-    void OnClientDisconnect(IGameClient client)
+    public void OnClientDisconnect(IGameClient client)
     {
+        _logger.LogInformation("ClientDisconnect: {Name}", client.Name);
         _player.RemovePlayer(client);
     }
 }

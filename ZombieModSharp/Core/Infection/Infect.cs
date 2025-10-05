@@ -7,6 +7,7 @@ using System.Linq.Expressions;
 using Microsoft.Extensions.Logging;
 using ZombieModSharp.Interface.Player;
 using ZombieModSharp.Interface.Infection;
+using Sharp.Shared;
 
 namespace ZombieModSharp.Core.Infection;
 
@@ -16,17 +17,17 @@ public class Infect : IInfect
     private readonly IEventManager _eventManager;
     private readonly ILogger<Infect> _logger;
     private readonly IPlayer _player;
-    private readonly IGameRules _gameRules;
+    private readonly IModSharp _modSharp;
 
     private bool InfectStarted = false;
 
-    public Infect(IEntityManager entityManager, IEventManager eventManager, ILogger<Infect> logger, IPlayer player, IGameRules gameRules)
+    public Infect(IEntityManager entityManager, IEventManager eventManager, ILogger<Infect> logger, IPlayer player, IModSharp modSharp)
     {
         _entityManager = entityManager;
         _eventManager = eventManager;
         _logger = logger;
         _player = player;
-        _gameRules = gameRules;
+        _modSharp = modSharp;
     }
 
     public void InfectPlayer(IGameClient client, IGameClient? attacker = null, bool motherzombie = false, bool force = false)
@@ -129,13 +130,13 @@ public class Infect : IInfect
         if (ctCount <= 0 && tCount > 0)
         {
             InfectStarted = false;
-            _gameRules.TerminateRound(5.0f, RoundEndReason.TerroristsWin);
+            _modSharp.GetGameRules().TerminateRound(5.0f, RoundEndReason.TerroristsWin);
         }
 
         else if (tCount <= 0 && ctCount > 0)
         {
             InfectStarted = false;
-            _gameRules.TerminateRound(5.0f, RoundEndReason.CTsWin);
+            _modSharp.GetGameRules().TerminateRound(5.0f, RoundEndReason.CTsWin);
         }
     }
 }
