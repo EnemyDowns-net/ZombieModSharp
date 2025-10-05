@@ -81,31 +81,30 @@ public class Events : IEvents, IEventListener
         var attackerId = new UserID((ushort)e.GetInt("attacker"));
         var attackerClient = _clientManager.GetGameClient(attackerId);
 
-        /*
         if (client == null || attackerClient == null)
         {
             return;
         }
 
-        var clientController = _entityManager.FindPlayerControllerBySlot(client.Slot);
-        var attackerController = _entityManager.FindPlayerControllerBySlot(attackerClient.Slot);
-
-        if (clientController == null || attackerController == null)
+        if (_infect.IsInfectStarted() == false)
         {
             return;
         }
 
-        if (clientController.Team == CStrikeTeam.CT && attackerController.Team == CStrikeTeam.TE)
-        {
-            var zmPlayer = _player.GetPlayer(attackerClient);
+        var zmClient = _player.GetPlayer(client);
+        var zmAttacker = _player.GetPlayer(attackerClient);
 
-            if (zmPlayer.IsInfected)
-            {
-                // Infect the player.
-                _infect.InfectPlayer(client, attackerClient);
-            }
+        if (zmClient.IsHuman() && zmAttacker.IsInfected())
+        {
+            // Infect the player.
+            _infect.InfectPlayer(client, attackerClient);
         }
-        */
+        else if (zmClient.IsInfected() && zmAttacker.IsHuman())
+        {
+            // Get weapon and calculate damage and knockback.
+            var weapon = e.GetString("weapon");
+            var damage = e.GetInt("dmg_health");
+        }
     }
 
     private void OnPlayerDeath(IGameEvent e)

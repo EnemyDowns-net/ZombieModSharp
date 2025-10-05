@@ -37,11 +37,16 @@ public class Infect : IInfect
             return;
         }
 
+        if (!InfectStarted)
+        {
+            InfectStarted = true;
+        }
+
         var clientController = _entityManager.FindPlayerControllerBySlot(client.Slot);
         clientController?.SwitchTeam(CStrikeTeam.TE);
 
         var zmPlayer = _player.GetPlayer(client);
-        zmPlayer.IsInfected = true;
+        zmPlayer.IsZombie = true;
 
         if (attacker == null)
             return;
@@ -73,6 +78,30 @@ public class Infect : IInfect
         }
     }
 
+    public void HumanizeClient(IGameClient client, bool force = false)
+    {
+        if (client == null)
+        {
+            return;
+        }
+
+        var clientController = _entityManager.FindPlayerControllerBySlot(client.Slot);
+        clientController?.SwitchTeam(CStrikeTeam.CT);
+
+        var zmPlayer = _player.GetPlayer(client);
+        zmPlayer.IsZombie = false;
+    }
+
+    public void OnRoundPreStart()
+    {
+
+    }
+
+    public void OnRoundStart()
+    {
+        _modSharp.PrintChannelAll(HudPrintChannel.Chat, " \x04[Z:MS]\x01 Current game mode is \x05Humans vs. Zombies\x01, the goal for zombies is to infect all humans by knifing them.");
+    }
+
     public void OnRoundEnd()
     {
         InfectStarted = false;
@@ -84,7 +113,7 @@ public class Infect : IInfect
             var client = kvp.Key;
             var zmPlayer = kvp.Value;
 
-            zmPlayer.IsInfected = false;
+            zmPlayer.IsZombie = false;
 
             var controller = _entityManager.FindPlayerControllerBySlot(client.Slot);
             if (controller == null)
@@ -138,5 +167,10 @@ public class Infect : IInfect
             InfectStarted = false;
             _modSharp.GetGameRules().TerminateRound(5.0f, RoundEndReason.CTsWin);
         }
+    }
+    
+    public bool IsInfectStarted()
+    {
+        return InfectStarted;
     }
 }

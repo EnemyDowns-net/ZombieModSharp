@@ -6,10 +6,20 @@ public class ZMPlayer
 {
     public ZMPlayer()
     {
-        IsInfected = false;
+        IsZombie = false;
         MotherZombieStatus = MotherZombieStatus.None;
     }
 
-    public bool IsInfected { get; set; } = false;
+    public bool IsZombie { get; set; } = false;
     public MotherZombieStatus MotherZombieStatus { get; set; } = MotherZombieStatus.None;
+
+    public bool IsHuman()
+    {
+        return !IsZombie;
+    }
+
+    public bool IsInfected()
+    {
+        return IsZombie;
+    }
 }
