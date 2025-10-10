@@ -5,9 +5,12 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using PlayerManager_Shared.Abstractions;
 using Sharp.Shared;
+using Sharp.Shared.Definition;
+using Sharp.Shared.Enums;
 using Sharp.Shared.Listeners;
 using Sharp.Shared.Managers;
 using Sharp.Shared.Objects;
+using Sharp.Shared.Types;
 using ZombieModSharp.Core;
 using ZombieModSharp.Core.Infection;
 using ZombieModSharp.Core.Player;
@@ -34,6 +37,8 @@ public sealed class ZombieModSharp : IModSharpModule
 
     // outside modules
     private IPlayerManager? _playerManager;
+
+    public static List<CommandDefinition> commandDefinition = [];
 
     public ZombieModSharp(ISharedSystem sharedSystem,
                       string dllPath,
@@ -95,8 +100,13 @@ public sealed class ZombieModSharp : IModSharpModule
     {
         var wrapper = _sharedSystem.GetSharpModuleManager()
                 .GetRequiredSharpModuleInterface<IPlayerManager>(IPlayerManager.Identity);
-            _playerManager = wrapper.Instance
-                             ?? throw new InvalidOperationException("PlayerManager_Shared 介面不可為 null");
+        _playerManager = wrapper.Instance
+                         ?? throw new InvalidOperationException("PlayerManager_Shared 介面不可為 null");
+
+        foreach (var command in commandDefinition)
+        {
+            _sharedSystem.GetClientManager().InstallCommandCallback("ms_ztele", (client, command) => OnClientUseCommand(client, command, Action.))
+        }
     }
 
     public void OnLibraryConnected(string name)
@@ -111,5 +121,70 @@ public sealed class ZombieModSharp : IModSharpModule
             _logger.LogWarning("PlayerManager get excluded or become invalid");
             _playerManager = null;
         }
+    }
+
+    private ECommandAction OnClientUseCommand(IGameClient client, StringCommand command, Action<ISharedSystem, IGamePlayer, IGameClient?> action)
+    {
+        return
+    }
+
+    private ECommandAction HandlePlayerTargets(
+            IGameClient? client,
+            StringCommand command,
+            Action<IGamePlayer> action)
+    {
+        string selector = "@me";
+        if (command.ArgCount > 0 && !string.IsNullOrWhiteSpace(command.ArgString))
+            selector = command.ArgString.Trim();
+
+        var allPlayers = _playerManager!.GetPlayers();
+
+        var targets = selector switch
+        {
+            "@me" when client != null => allPlayers.Where(p => p.Client.Equals(client)).ToArray(),
+            "@ct" => allPlayers.Where(p =>
+            {
+                var controller = _sharedSystem.GetEntityManager().FindPlayerControllerBySlot(p.Client.Slot);
+                return controller?.Team == CStrikeTeam.CT;
+            }).ToArray(),
+            "@t" => allPlayers.Where(p =>
+            {
+                var controller = _sharedSystem.GetEntityManager().FindPlayerControllerBySlot(p.Client.Slot);
+                return controller?.Team == CStrikeTeam.TE;
+            }).ToArray(),
+            _ => allPlayers.Where(p =>
+                !string.IsNullOrWhiteSpace(p.Name) &&
+                (p.Name.Equals(selector, StringComparison.OrdinalIgnoreCase) ||
+                 p.Name.StartsWith(selector, StringComparison.OrdinalIgnoreCase))
+            ).ToArray()
+        };
+
+        if (targets.Length == 0)
+        {
+            if (client != null)
+                client.SayChatMessage(false, $"{ChatColor.Red}[ADMCommands]{ChatColor.White} 找不到符合條件的玩家：{selector}");
+            else
+                Console.WriteLine($"找不到符合條件的玩家：{selector}");
+            return ECommandAction.Handled;
+        }
+
+        foreach (var target in targets)
+        {
+            action(target);
+        }
+
+        return ECommandAction.Handled;
+    }
+        
+    private bool HasPermission(IGameClient client)
+    {
+        if (_permission is null) return false;
+
+        var steamId = client.SteamId.ToString();
+        var identity = _permission.GetIdentity(steamId);
+
+        return identity.Equals("Admin", StringComparison.OrdinalIgnoreCase)
+                || identity.Equals("Manager", StringComparison.OrdinalIgnoreCase)
+                || identity.Equals("Owner", StringComparison.OrdinalIgnoreCase);
     }
 }
