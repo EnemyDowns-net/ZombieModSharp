@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using ZombieModSharp.Interface.Player;
 using ZombieModSharp.Interface.Infection;
 using Sharp.Shared;
+using ZombieModSharp.Enums;
 
 namespace ZombieModSharp.Core.Infection;
 
@@ -94,7 +95,23 @@ public class Infect : IInfect
 
     public void OnRoundPreStart()
     {
+        var allPlayers = _player.GetAllPlayers();
 
+        foreach (var kvp in allPlayers)
+        {
+            var client = kvp.Key;
+            var zmPlayer = kvp.Value;
+
+            zmPlayer.IsZombie = false;
+
+            var controller = _entityManager.FindPlayerControllerBySlot(client.Slot);
+            if (controller == null)
+            {
+                continue;
+            }
+
+            controller.SwitchTeam(CStrikeTeam.CT);
+        }
     }
 
     public void OnRoundStart()
@@ -114,12 +131,8 @@ public class Infect : IInfect
             var zmPlayer = kvp.Value;
 
             zmPlayer.IsZombie = false;
-
-            var controller = _entityManager.FindPlayerControllerBySlot(client.Slot);
-            if (controller == null)
-            {
-                continue;
-            }
+            if (zmPlayer.MotherZombieStatus == MotherZombieStatus.Chosen)
+                zmPlayer.MotherZombieStatus = MotherZombieStatus.Last;
         }
     }
 

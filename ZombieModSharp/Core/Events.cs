@@ -68,6 +68,9 @@ public class Events : IEvents, IEventListener
             case "player_spawn":
                 OnPlayerSpawn(e);
                 break;
+            case "cs_pre_restart":
+                OnPreRestart(e);
+                break;
             default:
                 break;
         }
@@ -120,17 +123,24 @@ public class Events : IEvents, IEventListener
         _modSharp.PrintChannelAll(HudPrintChannel.Chat, $"Client {client?.Name ?? "Unknown Player"} killed by {attackerClient?.Name ?? "Unknown Player"}");
     }
 
+    private void OnPreRestart(IGameEvent e)
+    {
+        _infect.OnRoundPreStart();
+    }
+
     private void OnRoundStart(IGameEvent e)
     {
         RoundEnded = false;
-        _modSharp.PrintChannelAll(HudPrintChannel.Chat, $"The round just started");
+        //_modSharp.PrintChannelAll(HudPrintChannel.Chat, $"The round just started");
+        _infect.OnRoundStart();
     }
 
     private void OnRoundEnd(IGameEvent e)
     {
         RoundEnded = true;
-        _modSharp.PrintChannelAll(HudPrintChannel.Chat, $"The round just ended");
+        //_modSharp.PrintChannelAll(HudPrintChannel.Chat, $"The round just ended");
         // _infect.OnRoundEnd();
+        _infect.OnRoundEnd();
     }
 
     private void OnPlayerSpawn(IGameEvent e)
@@ -140,16 +150,32 @@ public class Events : IEvents, IEventListener
 
         _modSharp.PrintChannelAll(HudPrintChannel.Chat, $"Client {client?.Name ?? "Unknown Player"} Spawned");
         _logger.LogInformation("PlayerSpawn: {Name}", client?.Name ?? "Unknown Player");
-        /*
-        var userId = new UserID((ushort)e.GetInt("userid"));
-        var client = _clientManager.GetGameClient(userId);
 
+        // go apply spawn stuff.
+        // ignore Spec and none team
         if (client == null)
-        {
             return;
+
+        var clientEnt = _entityManager.FindPlayerControllerBySlot(client.Slot);
+
+        var team = clientEnt?.Team ?? CStrikeTeam.UnAssigned;
+
+        if (team == CStrikeTeam.UnAssigned || team == CStrikeTeam.Spectator)
+            return;
+
+        if (_infect.IsInfectStarted())
+        {
+            // infect or
+            var timer = _modSharp.PushTimer(() => { _infect.InfectPlayer(client); }, 0.05, GameTimerFlags.None);
         }
 
-        var zmPlayer = _player.GetPlayer(client);
-        */
+        else
+        {
+            var timer = _modSharp.PushTimer(() => { _infect.HumanizeClient(client); }, 0.05, GameTimerFlags.None);
+        }
+
+        // teleport player later.
+        clientEnt.GetAbsOrigin();
+        clientEnt.GetAbsAngles();
     }
 }
