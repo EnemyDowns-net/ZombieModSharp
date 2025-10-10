@@ -1,3 +1,4 @@
+using Sharp.Shared.Types;
 using ZombieModSharp.Enums;
 
 namespace ZombieModSharp.Entities;
@@ -12,6 +13,8 @@ public class ZMPlayer
 
     public bool IsZombie { get; set; } = false;
     public MotherZombieStatus MotherZombieStatus { get; set; } = MotherZombieStatus.None;
+    public Vector? SpawnPoint { get; set; } = null;
+    public Vector? SpawnRotation { get; set; } = null;
 
     public bool IsHuman()
     {
