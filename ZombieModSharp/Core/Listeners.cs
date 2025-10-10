@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using Sharp.Shared.Enums;
 using Sharp.Shared.Listeners;
 using Sharp.Shared.Managers;
 using Sharp.Shared.Objects;
@@ -27,7 +28,7 @@ public class Listeners : IListeners, IClientListener
         _player.GetPlayer(client);
     }
 
-    public void OnClientDisconnect(IGameClient client)
+    public void OnClientDisconnecting(IGameClient client, NetworkDisconnectionReason reason)
     {
         _logger.LogInformation("ClientDisconnect: {Name}", client.Name);
         _player.RemovePlayer(client);
