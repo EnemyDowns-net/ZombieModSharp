@@ -2,10 +2,12 @@ using Microsoft.Extensions.DependencyInjection;
 using ZombieModSharp.Core;
 using ZombieModSharp.Core.Infection;
 using ZombieModSharp.Core.Player;
+using ZombieModSharp.Interface.Command;
 using ZombieModSharp.Interface.Events;
 using ZombieModSharp.Interface.Infection;
 using ZombieModSharp.Interface.Listeners;
 using ZombieModSharp.Interface.Player;
+using ZombieModSharp.Interface.ZTele;
 
 namespace ZombieModSharp.services;
 
@@ -16,7 +18,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IEvents, Events>()
             .AddSingleton<IPlayer, Player>()
             .AddSingleton<IInfect, Infect>()
-            .AddSingleton<IListeners, Listeners>();
+            .AddSingleton<IListeners, Listeners>()
+            .AddSingleton<IZTele, ZTele>()
+            .AddSingleton<ICommand, Command>();
         return services;
     }
 }

@@ -9,6 +9,7 @@ using ZombieModSharp.Interface.Player;
 using Sharp.Shared.Enums;
 using ZombieModSharp.Interface.Infection;
 using Sharp.Shared;
+using ZombieModSharp.Interface.ZTele;
 
 namespace ZombieModSharp.Core;
 
@@ -21,13 +22,14 @@ public class Events : IEvents, IEventListener
     private readonly IEntityManager _entityManager;
     private readonly IInfect _infect;
     private readonly IModSharp _modSharp;
+    private readonly IZTele _ztele;
 
     public int ListenerVersion => IEventListener.ApiVersion;
     public int ListenerPriority => 0;
 
     public bool RoundEnded { get; private set; } = false;
 
-    public Events(IEventManager eventManager, ILogger<Events> logger, IClientManager clientManager, IPlayer player, IEntityManager entityManager, IInfect infect, IModSharp modSharp)
+    public Events(IEventManager eventManager, ILogger<Events> logger, IClientManager clientManager, IPlayer player, IEntityManager entityManager, IInfect infect, IModSharp modSharp, IZTele ztele)
     {
         _eventManager = eventManager;
         _logger = logger;
@@ -36,6 +38,7 @@ public class Events : IEvents, IEventListener
         _modSharp = modSharp;
         _infect = infect;
         _entityManager = entityManager;
+        _ztele = ztele;
     }
 
     public void RegisterEvents()
@@ -174,8 +177,6 @@ public class Events : IEvents, IEventListener
             var timer = _modSharp.PushTimer(() => { _infect.HumanizeClient(client); }, 0.05, GameTimerFlags.None);
         }
 
-        // teleport player later.
-        clientEnt.GetAbsOrigin();
-        clientEnt.GetAbsAngles();
+        _ztele.OnPlayerSpawn(client);
     }
 }

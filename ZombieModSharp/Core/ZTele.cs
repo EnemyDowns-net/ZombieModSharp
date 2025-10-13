@@ -2,8 +2,9 @@ using Microsoft.Extensions.Logging;
 using Sharp.Shared.Managers;
 using Sharp.Shared.Objects;
 using ZombieModSharp.Interface.Player;
+using ZombieModSharp.Interface.ZTele;
 
-public class ZTele
+public class ZTele : IZTele
 {
     private readonly IPlayer _player;
     private readonly IEntityManager _entityManager;
@@ -30,5 +31,20 @@ public class ZTele
 
         player.SpawnPoint = clientEnt.GetAbsOrigin();
         player.SpawnRotation = clientEnt.GetAbsAngles();
+    }
+
+    public void TeleportToSpawn(IGameClient client)
+    {
+        var player = _player.GetPlayer(client);
+
+        var clientEnt = _entityManager.FindPlayerControllerBySlot(client.Slot);
+
+        if (clientEnt == null)
+            return;
+
+        if (!clientEnt.IsAlive)
+            return;
+
+        clientEnt.Teleport(player.SpawnPoint, player.SpawnRotation);
     }
 }

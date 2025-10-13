@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.Tracing;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
@@ -8,16 +7,17 @@ using Sharp.Shared;
 using Sharp.Shared.Definition;
 using Sharp.Shared.Enums;
 using Sharp.Shared.Listeners;
-using Sharp.Shared.Managers;
 using Sharp.Shared.Objects;
 using Sharp.Shared.Types;
 using ZombieModSharp.Core;
 using ZombieModSharp.Core.Infection;
 using ZombieModSharp.Core.Player;
+using ZombieModSharp.Interface.Command;
 using ZombieModSharp.Interface.Events;
 using ZombieModSharp.Interface.Infection;
 using ZombieModSharp.Interface.Listeners;
 using ZombieModSharp.Interface.Player;
+using ZombieModSharp.Interface.ZTele;
 
 namespace ZombieModSharp;
 
@@ -34,6 +34,8 @@ public sealed class ZombieModSharp : IModSharpModule
     private readonly IPlayer _player;
     private readonly IInfect _infect;
     private readonly IListeners _listeners;
+    private readonly IZTele _ztele;
+    private readonly ICommand _command;
 
     // outside modules
     private IPlayerManager? _playerManager;
@@ -67,7 +69,9 @@ public sealed class ZombieModSharp : IModSharpModule
         // Initial our stuff.
         _player = new Player();
         _infect = new Infect(_sharedSystem.GetEntityManager(), _sharedSystem.GetEventManager(), _serviceProvider.GetRequiredService<ILogger<Infect>>(), _player, _sharedSystem.GetModSharp());
-        _eventListener = new Events(_sharedSystem.GetEventManager(), _serviceProvider.GetRequiredService<ILogger<Events>>(), _sharedSystem.GetClientManager(), _player, _sharedSystem.GetEntityManager(), _infect, _sharedSystem.GetModSharp());
+        _ztele = new ZTele(_player, _serviceProvider.GetRequiredService<ILogger<ZTele>>(), _sharedSystem.GetEntityManager());
+        _command = new Command(_sharedSystem.GetClientManager(), _sharedSystem.GetModSharp(), _player, _ztele);
+        _eventListener = new Events(_sharedSystem.GetEventManager(), _serviceProvider.GetRequiredService<ILogger<Events>>(), _sharedSystem.GetClientManager(), _player, _sharedSystem.GetEntityManager(), _infect, _sharedSystem.GetModSharp(), _ztele);
         _listeners = new Listeners(_player, _serviceProvider.GetRequiredService<ILogger<Listeners>>());
     }
 
@@ -94,6 +98,8 @@ public sealed class ZombieModSharp : IModSharpModule
 
         var clientManager = _sharedSystem.GetClientManager();
         clientManager.InstallClientListener((IClientListener)_listeners);
+
+        _command.PostInit();
     }
 
     public void OnAllModulesLoaded()
@@ -105,7 +111,7 @@ public sealed class ZombieModSharp : IModSharpModule
 
         foreach (var command in commandDefinition)
         {
-            _sharedSystem.GetClientManager().InstallCommandCallback("ms_ztele", (client, command) => OnClientUseCommand(client, command, Action.))
+            //_sharedSystem.GetClientManager().InstallCommandCallback("ms_ztele", (client, command) => OnClientUseCommand(client, command, Action.))
         }
     }
 
@@ -125,7 +131,7 @@ public sealed class ZombieModSharp : IModSharpModule
 
     private ECommandAction OnClientUseCommand(IGameClient client, StringCommand command, Action<ISharedSystem, IGamePlayer, IGameClient?> action)
     {
-        return
+        return ECommandAction.Skipped;
     }
 
     private ECommandAction HandlePlayerTargets(
@@ -175,7 +181,8 @@ public sealed class ZombieModSharp : IModSharpModule
 
         return ECommandAction.Handled;
     }
-        
+
+    /*
     private bool HasPermission(IGameClient client)
     {
         if (_permission is null) return false;
@@ -187,4 +194,5 @@ public sealed class ZombieModSharp : IModSharpModule
                 || identity.Equals("Manager", StringComparison.OrdinalIgnoreCase)
                 || identity.Equals("Owner", StringComparison.OrdinalIgnoreCase);
     }
+    */
 }
