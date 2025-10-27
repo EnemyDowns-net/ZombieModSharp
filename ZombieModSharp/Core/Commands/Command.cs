@@ -3,8 +3,10 @@ using Sharp.Shared.Enums;
 using Sharp.Shared.Managers;
 using Sharp.Shared.Objects;
 using Sharp.Shared.Types;
+using ZombieModSharp.Core.Infection;
 using ZombieModSharp.Core.Player;
 using ZombieModSharp.Interface.Command;
+using ZombieModSharp.Interface.Infection;
 using ZombieModSharp.Interface.Player;
 using ZombieModSharp.Interface.ZTele;
 
@@ -14,18 +16,21 @@ public class Command : ICommand
     private readonly IModSharp _modsharp;
     private readonly IPlayer _player;
     private readonly IZTele _ztele;
+    private readonly IInfect _infect;
 
-    public Command(IClientManager clientManager, IModSharp modSharp, IPlayer player, IZTele ztele)
+    public Command(IClientManager clientManager, IModSharp modSharp, IPlayer player, IZTele ztele, IInfect infect)
     {
         _clientManager = clientManager;
         _modsharp = modSharp;
         _player = player;
         _ztele = ztele;
+        _infect = infect;
     }
 
     public void PostInit()
     {
         _clientManager.InstallCommandCallback("ms_ztele", ZTeleCommand);
+        _clientManager.InstallCommandCallback("ms_infect", InfectCommand);
     }
 
     public ECommandAction ZTeleCommand(IGameClient client, StringCommand command)
@@ -34,7 +39,7 @@ public class Command : ICommand
 
         var receiver = new RecipientFilter(client.Slot);
 
-        if(client == null || playerInfo == null)
+        if (client == null || playerInfo == null)
         {
             _modsharp.PrintChannelFilter(HudPrintChannel.Chat, "Invalid Client.", receiver);
             return ECommandAction.Handled;
@@ -42,6 +47,23 @@ public class Command : ICommand
 
         _modsharp.PrintChannelFilter(HudPrintChannel.Chat, "Teleport back to spawn.", receiver);
         _ztele.TeleportToSpawn(client);
+        return ECommandAction.Skipped;
+    }
+    
+    public ECommandAction InfectCommand(IGameClient client, StringCommand command)
+    {
+        var playerInfo = _player.GetPlayer(client);
+
+        var receiver = new RecipientFilter(client.Slot);
+
+        if (client == null || playerInfo == null)
+        {
+            _modsharp.PrintChannelFilter(HudPrintChannel.Chat, "Invalid Client.", receiver);
+            return ECommandAction.Handled;
+        }
+
+        _modsharp.PrintChannelFilter(HudPrintChannel.Chat, "You have been infected!", receiver);
+        _infect.InfectPlayer(client);
         return ECommandAction.Skipped;
     }
 }
