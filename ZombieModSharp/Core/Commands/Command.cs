@@ -54,9 +54,9 @@ public class Command : ICommand
 
     private ECommandAction OnClientUseCommand(IGameClient client, StringCommand command, Action<ISharedSystem, IGamePlayer, IGameClient?, StringCommand> action)
     {
-        var (result, extraValue) = HandlePlayerTargets(client, command, (target, ev) =>
+        var result = HandlePlayerTargets(client, command, (target) =>
         {
-            action(_sharedSystem, target, client, command, ev);
+            action(_sharedSystem, target, client, command);
         });
 
         return result;
