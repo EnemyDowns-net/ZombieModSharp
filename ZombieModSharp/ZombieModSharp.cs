@@ -35,12 +35,10 @@ public sealed class ZombieModSharp : IModSharpModule
     private readonly IInfect _infect;
     private readonly IListeners _listeners;
     private readonly IZTele _ztele;
-    private readonly ICommand _command;
+    private ICommand _command;
 
     // outside modules
     private IPlayerManager? _playerManager;
-
-    public static List<CommandDefinition> commandDefinition = [];
 
     public ZombieModSharp(ISharedSystem sharedSystem,
                       string dllPath,
@@ -70,7 +68,6 @@ public sealed class ZombieModSharp : IModSharpModule
         _player = new Player();
         _infect = new Infect(_sharedSystem.GetEntityManager(), _sharedSystem.GetEventManager(), _serviceProvider.GetRequiredService<ILogger<Infect>>(), _player, _sharedSystem.GetModSharp());
         _ztele = new ZTele(_player, _serviceProvider.GetRequiredService<ILogger<ZTele>>(), _sharedSystem.GetEntityManager());
-        _command = new Command(_sharedSystem.GetClientManager(), _sharedSystem.GetModSharp(), _player, _ztele);
         _eventListener = new Events(_sharedSystem.GetEventManager(), _serviceProvider.GetRequiredService<ILogger<Events>>(), _sharedSystem.GetClientManager(), _player, _sharedSystem.GetEntityManager(), _infect, _sharedSystem.GetModSharp(), _ztele);
         _listeners = new Listeners(_player, _serviceProvider.GetRequiredService<ILogger<Listeners>>());
     }
@@ -109,10 +106,7 @@ public sealed class ZombieModSharp : IModSharpModule
         _playerManager = wrapper.Instance
                          ?? throw new InvalidOperationException("PlayerManager_Shared 介面不可為 null");
 
-        foreach (var command in commandDefinition)
-        {
-            //_sharedSystem.GetClientManager().InstallCommandCallback("ms_ztele", (client, command) => OnClientUseCommand(client, command, Action.))
-        }
+        _command = new Command(_sharedSystem.GetClientManager(), _sharedSystem.GetModSharp(), _player, _ztele, _infect, _playerManager, _sharedSystem);
     }
 
     public void OnLibraryConnected(string name)
@@ -127,59 +121,6 @@ public sealed class ZombieModSharp : IModSharpModule
             _logger.LogWarning("PlayerManager get excluded or become invalid");
             _playerManager = null;
         }
-    }
-
-    private ECommandAction OnClientUseCommand(IGameClient client, StringCommand command, Action<ISharedSystem, IGamePlayer, IGameClient?> action)
-    {
-        return ECommandAction.Skipped;
-    }
-
-    private ECommandAction HandlePlayerTargets(
-            IGameClient? client,
-            StringCommand command,
-            Action<IGamePlayer> action)
-    {
-        string selector = "@me";
-        if (command.ArgCount > 0 && !string.IsNullOrWhiteSpace(command.ArgString))
-            selector = command.ArgString.Trim();
-
-        var allPlayers = _playerManager!.GetPlayers();
-
-        var targets = selector switch
-        {
-            "@me" when client != null => allPlayers.Where(p => p.Client.Equals(client)).ToArray(),
-            "@ct" => allPlayers.Where(p =>
-            {
-                var controller = _sharedSystem.GetEntityManager().FindPlayerControllerBySlot(p.Client.Slot);
-                return controller?.Team == CStrikeTeam.CT;
-            }).ToArray(),
-            "@t" => allPlayers.Where(p =>
-            {
-                var controller = _sharedSystem.GetEntityManager().FindPlayerControllerBySlot(p.Client.Slot);
-                return controller?.Team == CStrikeTeam.TE;
-            }).ToArray(),
-            _ => allPlayers.Where(p =>
-                !string.IsNullOrWhiteSpace(p.Name) &&
-                (p.Name.Equals(selector, StringComparison.OrdinalIgnoreCase) ||
-                 p.Name.StartsWith(selector, StringComparison.OrdinalIgnoreCase))
-            ).ToArray()
-        };
-
-        if (targets.Length == 0)
-        {
-            if (client != null)
-                client.SayChatMessage(false, $"{ChatColor.Red}[ADMCommands]{ChatColor.White} 找不到符合條件的玩家：{selector}");
-            else
-                Console.WriteLine($"找不到符合條件的玩家：{selector}");
-            return ECommandAction.Handled;
-        }
-
-        foreach (var target in targets)
-        {
-            action(target);
-        }
-
-        return ECommandAction.Handled;
     }
 
     /*
