@@ -9,7 +9,7 @@ using ZombieModSharp.Interface.Listeners;
 using ZombieModSharp.Interface.Player;
 using ZombieModSharp.Interface.ZTele;
 
-namespace ZombieModSharp.services;
+namespace ZombieModSharp.Services;
 
 public static class ServiceCollectionExtensions
 {

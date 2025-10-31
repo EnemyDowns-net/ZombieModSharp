@@ -4,6 +4,8 @@ using Sharp.Shared.Objects;
 using ZombieModSharp.Interface.Player;
 using ZombieModSharp.Interface.ZTele;
 
+namespace ZombieModSharp.Core;
+
 public class ZTele : IZTele
 {
     private readonly IPlayer _player;

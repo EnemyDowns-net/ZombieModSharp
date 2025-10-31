@@ -17,6 +17,7 @@ using ZombieModSharp.Interface.Infection;
 using ZombieModSharp.Interface.Listeners;
 using ZombieModSharp.Interface.Player;
 using ZombieModSharp.Interface.ZTele;
+using ZombieModSharp.Services;
 
 namespace ZombieModSharp;
 
@@ -57,18 +58,28 @@ public sealed class ZombieModSharp : IModSharpModule
 
         services.AddSingleton(sharedSystem.GetLoggerFactory());
         services.TryAdd(ServiceDescriptor.Singleton(typeof(ILogger<>), typeof(Logger<>)));
+        
+        // Register external dependencies
+        services.AddSingleton(_sharedSystem);
+        services.AddSingleton(_sharedSystem.GetEntityManager());
+        services.AddSingleton(_sharedSystem.GetEventManager());
+        services.AddSingleton(_sharedSystem.GetModSharp());
+        services.AddSingleton(_sharedSystem.GetClientManager());
+        
+        // Register our services using the extension method
+        services.AddZombieModSharpServices();
 
         // _bridge = new InterfaceBridge(dllPath, sharpPath, version, sharedSystem);
         _logger = sharedSystem.GetLoggerFactory().CreateLogger<ZombieModSharp>();
         _serviceProvider = services.BuildServiceProvider();
 
-        // Initial our stuff.
-        _player = new Player();
-        _infect = new Infect(_sharedSystem.GetEntityManager(), _sharedSystem.GetEventManager(), _serviceProvider.GetRequiredService<ILogger<Infect>>(), _player, _sharedSystem.GetModSharp());
-        _ztele = new ZTele(_player, _serviceProvider.GetRequiredService<ILogger<ZTele>>(), _sharedSystem.GetEntityManager());
-        _eventListener = new Events(_sharedSystem, _serviceProvider.GetRequiredService<ILogger<Events>>(), _player, _infect, _ztele);
-        _listeners = new Listeners(_player, _sharedSystem, _serviceProvider.GetRequiredService<ILogger<Listeners>>());
-        _command = new Command(_player, _ztele, _infect, _sharedSystem);
+        // Get services from DI container instead of manual instantiation
+        _player = _serviceProvider.GetRequiredService<IPlayer>();
+        _infect = _serviceProvider.GetRequiredService<IInfect>();
+        _ztele = _serviceProvider.GetRequiredService<IZTele>();
+        _eventListener = _serviceProvider.GetRequiredService<IEvents>();
+        _listeners = _serviceProvider.GetRequiredService<IListeners>();
+        _command = _serviceProvider.GetRequiredService<ICommand>();
     }
 
     public bool Init()
