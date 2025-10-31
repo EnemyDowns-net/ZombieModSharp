@@ -67,7 +67,7 @@ public sealed class ZombieModSharp : IModSharpModule
         _player = new Player();
         _infect = new Infect(_sharedSystem.GetEntityManager(), _sharedSystem.GetEventManager(), _serviceProvider.GetRequiredService<ILogger<Infect>>(), _player, _sharedSystem.GetModSharp());
         _ztele = new ZTele(_player, _serviceProvider.GetRequiredService<ILogger<ZTele>>(), _sharedSystem.GetEntityManager());
-        _eventListener = new Events(_sharedSystem.GetEventManager(), _serviceProvider.GetRequiredService<ILogger<Events>>(), _sharedSystem.GetClientManager(), _player, _sharedSystem.GetEntityManager(), _infect, _sharedSystem.GetModSharp(), _ztele);
+        _eventListener = new Events(_sharedSystem, _serviceProvider.GetRequiredService<ILogger<Events>>(), _player, _infect, _ztele);
         _listeners = new Listeners(_player, _sharedSystem, _serviceProvider.GetRequiredService<ILogger<Listeners>>());
         _command = new Command(_player, _ztele, _infect, _sharedSystem);
     }
@@ -76,6 +76,9 @@ public sealed class ZombieModSharp : IModSharpModule
     {
         _logger.LogInformation(
             "Oh wow, we seem to be crossing paths a lot lately... Where could I have seen you before? Can you figure it out?");
+
+        _listeners.Init();
+        _eventListener.Init();
         return true;
     }
 
@@ -87,12 +90,7 @@ public sealed class ZombieModSharp : IModSharpModule
     public void PostInit()
     {
         _logger.LogInformation("Why don't you stay and play for a while?");
-
-        var eventManager = _sharedSystem.GetEventManager();
-        eventManager.InstallEventListener((IEventListener)_eventListener);
-
         _eventListener.RegisterEvents();
-        _listeners.Init();
     }
 
     public void OnAllModulesLoaded()

@@ -15,6 +15,7 @@ namespace ZombieModSharp.Core;
 
 public class Events : IEvents, IEventListener
 {
+    private readonly ISharedSystem _sharedSystem;
     private readonly IEventManager _eventManager;
     private readonly ILogger<Events> _logger;
     private readonly IClientManager _clientManager;
@@ -29,16 +30,22 @@ public class Events : IEvents, IEventListener
 
     public bool RoundEnded { get; private set; } = false;
 
-    public Events(IEventManager eventManager, ILogger<Events> logger, IClientManager clientManager, IPlayer player, IEntityManager entityManager, IInfect infect, IModSharp modSharp, IZTele ztele)
+    public Events(ISharedSystem sharedSystem, ILogger<Events> logger, IPlayer player, IInfect infect, IZTele ztele)
     {
-        _eventManager = eventManager;
+        _sharedSystem = sharedSystem;
+        _eventManager = _sharedSystem.GetEventManager();
         _logger = logger;
-        _clientManager = clientManager;
+        _clientManager = _sharedSystem.GetClientManager();
         _player = player;
-        _modSharp = modSharp;
+        _modSharp = _sharedSystem.GetModSharp();
         _infect = infect;
-        _entityManager = entityManager;
+        _entityManager = _sharedSystem.GetEntityManager();
         _ztele = ztele;
+    }
+
+    public void Init()
+    {
+        _eventManager.InstallEventListener(this);
     }
 
     public void RegisterEvents()
