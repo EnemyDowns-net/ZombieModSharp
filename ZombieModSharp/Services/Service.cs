@@ -15,12 +15,9 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddZombieModSharpServices(this IServiceCollection services)
     {
-        services.AddSingleton<IEvents, Events>()
-            .AddSingleton<IPlayer, Player>()
+        services.AddSingleton<IPlayer, Player>()
             .AddSingleton<IInfect, Infect>()
-            .AddSingleton<IListeners, Listeners>()
-            .AddSingleton<IZTele, ZTele>()
-            .AddSingleton<ICommand, Command>();
+            .AddSingleton<IZTele, ZTele>();
         return services;
     }
 }

@@ -1,20 +1,24 @@
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Sharp.Shared.Managers;
 using Sharp.Shared.Objects;
+using TnmsPluginFoundation;
 using ZombieModSharp.Interface.Player;
 using ZombieModSharp.Interface.ZTele;
 
 public class ZTele : IZTele
 {
+    private readonly TnmsPlugin _plugin;
     private readonly IPlayer _player;
-    private readonly IEntityManager _entityManager;
     private readonly ILogger<ZTele> _logger;
+    private readonly IEntityManager _entityManager;
 
-    public ZTele(IPlayer player, ILogger<ZTele> logger, IEntityManager entityManager)
+    public ZTele(IServiceProvider serviceProvider, IPlayer player, ILogger<ZTele> logger)
     {
+        _plugin = serviceProvider.GetRequiredService<TnmsPlugin>();
         _logger = logger;
         _player = player;
-        _entityManager = entityManager;
+        _entityManager = _plugin.SharedSystem.GetEntityManager();
     }
 
     public void OnPlayerSpawn(IGameClient client)

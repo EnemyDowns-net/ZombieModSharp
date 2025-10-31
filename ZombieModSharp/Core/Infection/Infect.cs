@@ -9,11 +9,15 @@ using ZombieModSharp.Interface.Player;
 using ZombieModSharp.Interface.Infection;
 using Sharp.Shared;
 using ZombieModSharp.Enums;
+using Microsoft.Extensions.DependencyInjection;
+using TnmsPluginFoundation;
+using TnmsPluginFoundation.Models.Plugin;
 
 namespace ZombieModSharp.Core.Infection;
 
-public class Infect : IInfect
+public class (IServiceProvider provider) : PluginModuleBase(provider),IInfect
 {
+    private readonly TnmsPlugin _plugin;
     private readonly IEntityManager _entityManager;
     private readonly IEventManager _eventManager;
     private readonly ILogger<Infect> _logger;
@@ -22,13 +26,19 @@ public class Infect : IInfect
 
     private bool InfectStarted = false;
 
-    public Infect(IEntityManager entityManager, IEventManager eventManager, ILogger<Infect> logger, IPlayer player, IModSharp modSharp)
+    public Infect(IServiceProvider serviceProvider, ILogger<Infect> logger, IPlayer player)
     {
-        _entityManager = entityManager;
-        _eventManager = eventManager;
+        _plugin = serviceProvider.GetRequiredService<TnmsPlugin>();
+        _entityManager = _plugin.SharedSystem.GetEntityManager();
+        _eventManager = _plugin.SharedSystem.GetEventManager();
         _logger = logger;
         _player = player;
-        _modSharp = modSharp;
+        _modSharp = _plugin.SharedSystem.GetModSharp();
+    }
+
+    public override void RegisterServices(IServiceCollection services)
+    {
+        services.AddSingleton<IInfect, Infect>();
     }
 
     public void InfectPlayer(IGameClient client, IGameClient? attacker = null, bool motherzombie = false, bool force = false)

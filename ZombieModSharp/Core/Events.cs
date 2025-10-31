@@ -10,34 +10,38 @@ using Sharp.Shared.Enums;
 using ZombieModSharp.Interface.Infection;
 using Sharp.Shared;
 using ZombieModSharp.Interface.ZTele;
+using TnmsPluginFoundation;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace ZombieModSharp.Core;
 
-public class Events : IEvents, IEventListener
+public class Events : IEventListener
 {
-    private readonly IEventManager _eventManager;
+    private readonly TnmsPlugin _plugin;
+    public int ListenerVersion => IEventListener.ApiVersion;
+    public int ListenerPriority => 0;
+
     private readonly ILogger<Events> _logger;
+    private readonly IEventManager _eventManager;
     private readonly IClientManager _clientManager;
-    private readonly IPlayer _player;
     private readonly IEntityManager _entityManager;
+    private readonly IPlayer _player;
     private readonly IInfect _infect;
     private readonly IModSharp _modSharp;
     private readonly IZTele _ztele;
 
-    public int ListenerVersion => IEventListener.ApiVersion;
-    public int ListenerPriority => 0;
-
     public bool RoundEnded { get; private set; } = false;
 
-    public Events(IEventManager eventManager, ILogger<Events> logger, IClientManager clientManager, IPlayer player, IEntityManager entityManager, IInfect infect, IModSharp modSharp, IZTele ztele)
+    public Events(IServiceProvider serviceProvider, ILogger<Events> logger, IPlayer player, IInfect infect, IZTele ztele)
     {
-        _eventManager = eventManager;
+        _plugin = serviceProvider.GetRequiredService<TnmsPlugin>();
         _logger = logger;
-        _clientManager = clientManager;
-        _player = player;
-        _modSharp = modSharp;
+        _eventManager = _plugin.SharedSystem.GetEventManager();
+        _clientManager = _plugin.SharedSystem.GetClientManager();
+        _modSharp = _plugin.SharedSystem.GetModSharp();
+        _entityManager = _plugin.SharedSystem.GetEntityManager();
         _infect = infect;
-        _entityManager = entityManager;
+        _player = player;
         _ztele = ztele;
     }
 
