@@ -2,7 +2,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
-using PlayerManager_Shared.Abstractions;
 using Sharp.Shared;
 using Sharp.Shared.Definition;
 using Sharp.Shared.Enums;
@@ -95,8 +94,7 @@ public sealed class ZombieModSharp : IModSharpModule
 
     public void OnAllModulesLoaded()
     {
-        var wrapper = _sharedSystem.GetSharpModuleManager()
-                .GetRequiredSharpModuleInterface<IPlayerManager>(IPlayerManager.Identity);
+
     }
 
     public void OnLibraryConnected(string name)
