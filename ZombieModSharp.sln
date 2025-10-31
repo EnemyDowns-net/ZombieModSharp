@@ -5,7 +5,7 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZombieModSharp", "ZombieModSharp\ZombieModSharp.csproj", "{2D022DC5-81FD-4C7C-8EE9-9874963A9C60}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayerManager_Shared", "PlayerManager_Shared\PlayerManager_Shared.csproj", "{9805A33A-B823-45FC-B4FD-5C0BE4487397}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayerManager_Shared.Abstractions", "PlayerManager_Shared.Abstractions\PlayerManager_Shared.Abstractions.csproj", "{9805A33A-B823-45FC-B4FD-5C0BE4487397}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

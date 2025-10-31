@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using Sharp.Shared;
 using Sharp.Shared.Enums;
 using Sharp.Shared.Listeners;
 using Sharp.Shared.Managers;
@@ -14,12 +15,19 @@ public class Listeners : IListeners, IClientListener
     public int ListenerPriority => 0;
 
     private readonly IPlayer _player;
+    private readonly ISharedSystem _sharedSystem;
     private readonly ILogger<Listeners> _logger;
 
-    public Listeners(IPlayer player, ILogger<Listeners> logger)
+    public Listeners(IPlayer player, ISharedSystem sharedSystem, ILogger<Listeners> logger)
     {
         _player = player;
+        _sharedSystem = sharedSystem;
         _logger = logger;
+    }
+
+    public void Init()
+    {
+        _sharedSystem.GetClientManager().InstallClientListener(this);
     }
 
     public void OnClientPutInServer(IGameClient client)

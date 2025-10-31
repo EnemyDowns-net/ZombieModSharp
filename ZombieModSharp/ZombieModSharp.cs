@@ -35,10 +35,9 @@ public sealed class ZombieModSharp : IModSharpModule
     private readonly IInfect _infect;
     private readonly IListeners _listeners;
     private readonly IZTele _ztele;
-    private ICommand _command;
+    private readonly ICommand _command;
 
-    // outside modules
-    private IPlayerManager? _playerManager;
+    // outside module
 
     public ZombieModSharp(ISharedSystem sharedSystem,
                       string dllPath,
@@ -69,7 +68,8 @@ public sealed class ZombieModSharp : IModSharpModule
         _infect = new Infect(_sharedSystem.GetEntityManager(), _sharedSystem.GetEventManager(), _serviceProvider.GetRequiredService<ILogger<Infect>>(), _player, _sharedSystem.GetModSharp());
         _ztele = new ZTele(_player, _serviceProvider.GetRequiredService<ILogger<ZTele>>(), _sharedSystem.GetEntityManager());
         _eventListener = new Events(_sharedSystem.GetEventManager(), _serviceProvider.GetRequiredService<ILogger<Events>>(), _sharedSystem.GetClientManager(), _player, _sharedSystem.GetEntityManager(), _infect, _sharedSystem.GetModSharp(), _ztele);
-        _listeners = new Listeners(_player, _serviceProvider.GetRequiredService<ILogger<Listeners>>());
+        _listeners = new Listeners(_player, _sharedSystem, _serviceProvider.GetRequiredService<ILogger<Listeners>>());
+        _command = new Command(_player, _ztele, _infect, _sharedSystem);
     }
 
     public bool Init()
@@ -92,21 +92,13 @@ public sealed class ZombieModSharp : IModSharpModule
         eventManager.InstallEventListener((IEventListener)_eventListener);
 
         _eventListener.RegisterEvents();
-
-        var clientManager = _sharedSystem.GetClientManager();
-        clientManager.InstallClientListener((IClientListener)_listeners);
-
-        _command.PostInit();
+        _listeners.Init();
     }
 
     public void OnAllModulesLoaded()
     {
         var wrapper = _sharedSystem.GetSharpModuleManager()
                 .GetRequiredSharpModuleInterface<IPlayerManager>(IPlayerManager.Identity);
-        _playerManager = wrapper.Instance
-                         ?? throw new InvalidOperationException("PlayerManager_Shared 介面不可為 null");
-
-        _command = new Command(_sharedSystem.GetClientManager(), _sharedSystem.GetModSharp(), _player, _ztele, _infect, _playerManager, _sharedSystem);
     }
 
     public void OnLibraryConnected(string name)
@@ -116,11 +108,7 @@ public sealed class ZombieModSharp : IModSharpModule
 
     public void OnLibraryDisconnect(string name)
     {
-        if (name == "PlayerManager")
-        {
-            _logger.LogWarning("PlayerManager get excluded or become invalid");
-            _playerManager = null;
-        }
+        
     }
 
     /*

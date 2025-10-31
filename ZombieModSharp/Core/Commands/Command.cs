@@ -15,142 +15,126 @@ using ZombieModSharp.Interface.ZTele;
 
 public class Command : ICommand
 {
-    private readonly IClientManager _clientManager;
-    private readonly IModSharp _modsharp;
     private readonly IPlayer _player;
     private readonly IZTele _ztele;
     private readonly IInfect _infect;
-    private readonly IPlayerManager _playerManager;
     private readonly ISharedSystem _sharedSystem;
+    private readonly IClientManager _clientManager;
+    private readonly IEntityManager _entityManager;
+    private readonly IModSharp _modsharp;
 
-    private static List<CommandDefinition> commandList = [];
-
-    public Command(IClientManager clientManager, IModSharp modSharp, IPlayer player, IZTele ztele, IInfect infect, IPlayerManager playerManager, ISharedSystem sharedSystem)
+    public Command(IPlayer player, IZTele ztele, IInfect infect, ISharedSystem sharedSystem)
     {
-        _clientManager = clientManager;
-        _modsharp = modSharp;
         _player = player;
         _ztele = ztele;
-        _playerManager = playerManager;
         _infect = infect;
         _sharedSystem = sharedSystem;
+        _clientManager = _sharedSystem.GetClientManager();
+        _entityManager = _sharedSystem.GetEntityManager();
+        _modsharp = _sharedSystem.GetModSharp();
     }
 
     public void PostInit()
     {
-        // _clientManager.InstallCommandCallback("ms_ztele", ZTeleCommand);
+        _clientManager.InstallCommandCallback("ms_ztele", ZTeleCommand);
         _clientManager.InstallCommandCallback("ms_infect", InfectCommand);
-
-        CreateCommand("ms_ztele", ZTeleCommand, "Teleport back to spawn.");
     }
 
-    public void OnAllModulesLoaded(ISharedSystem sharedSystem)
-    {
-        foreach (var command in commandList)
-        {
-            _sharedSystem.GetClientManager().InstallCommandCallback(command.ConsoleName, (client, cmd) => OnClientUseCommand(client, cmd, command.Action));
-        }
-    }
-
-    private ECommandAction OnClientUseCommand(IGameClient client, StringCommand command, Action<ISharedSystem, IGamePlayer, IGameClient?, StringCommand> action)
-    {
-        var result = HandlePlayerTargets(client, command, (target) =>
-        {
-            action(_sharedSystem, target, client, command);
-        });
-
-        return result;
-    }
-
-    public static CommandDefinition CreateCommand(string consoleName, Action<ISharedSystem, IGamePlayer, IGameClient?, StringCommand> action, string description = "")
-    {
-        string name = consoleName.Replace("ms_", "");
-        var newCommand = new CommandDefinition(name, consoleName, description, action);
-        commandList.Add(newCommand);
-        return newCommand;
-    }
-
-    /*
-    public ECommandAction ZTeleCommand(IGameClient client, StringCommand command)
+    private ECommandAction ZTeleCommand(IGameClient client, StringCommand command)
     {
         var playerInfo = _player.GetPlayer(client);
 
-        var receiver = new RecipientFilter(client.Slot);
-
         if (client == null || playerInfo == null)
-        {
-            _modsharp.PrintChannelFilter(HudPrintChannel.Chat, "Invalid Client.", receiver);
             return ECommandAction.Handled;
-        }
 
-        _modsharp.PrintChannelFilter(HudPrintChannel.Chat, "Teleport back to spawn.", receiver);
+        ReplyToCommand(client, "Teleport back to spawn.");
         _ztele.TeleportToSpawn(client);
         return ECommandAction.Skipped;
     }
-    */
 
-    public ECommandAction InfectCommand(IGameClient client, StringCommand command)
+    private ECommandAction InfectCommand(IGameClient client, StringCommand command)
     {
-        var playerInfo = _player.GetPlayer(client);
-
-        var receiver = new RecipientFilter(client.Slot);
-
-        if (client == null || playerInfo == null)
+        if (command.ArgCount < 1)
         {
-            _modsharp.PrintChannelFilter(HudPrintChannel.Chat, "Invalid Client.", receiver);
-            return ECommandAction.Handled;
+            ReplyToCommand(client, "Usage: ms_infect <target>");
+            return ECommandAction.Stopped;
         }
 
-        _modsharp.PrintChannelFilter(HudPrintChannel.Chat, "You have been infected!", receiver);
-        _infect.InfectPlayer(client);
+        var arg = command.GetArg(1);
+        var target = GetTargets(client, arg);
+
+        if (target == null || target.Count == 0)
+        {
+            ReplyToCommand(client, "No target is found");
+            return ECommandAction.Stopped;
+        }
+
+        foreach (var player in target)
+        {
+            _infect.InfectPlayer(player, null, false, true);
+            _modsharp.PrintChannelAll(HudPrintChannel.Chat, $"Admin {client.Name} has infected {player.Name} via command");
+        }
+
         return ECommandAction.Skipped;
     }
 
-    private ECommandAction HandlePlayerTargets(
-            IGameClient? client,
-            StringCommand command,
-            Action<IGamePlayer> action)
+    private void ReplyToCommand(IGameClient client, string text)
     {
-        string selector = "@me";
-        if (command.ArgCount > 0 && !string.IsNullOrWhiteSpace(command.ArgString))
-            selector = command.ArgString.Trim();
-
-        var allPlayers = _playerManager!.GetPlayers();
-
-        var targets = selector switch
+        if (client == null)
         {
-            "@me" when client != null => allPlayers.Where(p => p.Client.Equals(client)).ToArray(),
-            "@ct" => allPlayers.Where(p =>
-            {
-                var controller = _sharedSystem.GetEntityManager().FindPlayerControllerBySlot(p.Client.Slot);
-                return controller?.Team == CStrikeTeam.CT;
-            }).ToArray(),
-            "@t" => allPlayers.Where(p =>
-            {
-                var controller = _sharedSystem.GetEntityManager().FindPlayerControllerBySlot(p.Client.Slot);
-                return controller?.Team == CStrikeTeam.TE;
-            }).ToArray(),
-            _ => allPlayers.Where(p =>
-                !string.IsNullOrWhiteSpace(p.Name) &&
-                (p.Name.Equals(selector, StringComparison.OrdinalIgnoreCase) ||
-                 p.Name.StartsWith(selector, StringComparison.OrdinalIgnoreCase))
-            ).ToArray()
-        };
-
-        if (targets.Length == 0)
-        {
-            if (client != null)
-                client.SayChatMessage(false, $"{ChatColor.Red}[ADMCommands]{ChatColor.White} 找不到符合條件的玩家：{selector}");
-            else
-                Console.WriteLine($"找不到符合條件的玩家：{selector}");
-            return ECommandAction.Handled;
+            Console.WriteLine(text);
+            return;
         }
 
-        foreach (var target in targets)
+        else
         {
-            action(target);
+            var receiver = new RecipientFilter(client.Slot);
+            _modsharp.PrintChannelFilter(HudPrintChannel.Chat, "Teleport back to spawn.", receiver);
+        }
+    }
+
+    private List<IGameClient> GetTargets(IGameClient? sender, string target)
+    {
+        var targets = new List<IGameClient>();
+
+        if (string.Equals(target, "@all", StringComparison.OrdinalIgnoreCase))
+        {
+            targets.AddRange(_player.GetAllPlayers().Select(p => p.Key));
+        }
+        else if (string.Equals(target, "@me", StringComparison.OrdinalIgnoreCase))
+        {
+            if (sender != null)
+                targets.Add(sender);
+        }
+        else if (string.Equals(target, "@zombies", StringComparison.OrdinalIgnoreCase))
+        {
+            targets.AddRange(_player.GetAllPlayers().Where(p => p.Value.IsInfected()).Select(p => p.Key));
+        }
+        else if (string.Equals(target, "@humans", StringComparison.OrdinalIgnoreCase))
+        {
+            targets.AddRange(_player.GetAllPlayers().Where(p => !p.Value.IsInfected()).Select(p => p.Key));
+        }
+        else if (string.Equals(target, "@ct", StringComparison.OrdinalIgnoreCase))
+        {
+            targets.AddRange(_player.GetAllPlayers().Where(p =>
+                _entityManager.FindPlayerControllerBySlot(p.Key.Slot)?.Team == CStrikeTeam.CT).Select(p => p.Key));
+        }
+        else if (string.Equals(target, "@t", StringComparison.OrdinalIgnoreCase))
+        {
+            targets.AddRange(_player.GetAllPlayers().Where(p =>
+                _entityManager.FindPlayerControllerBySlot(p.Key.Slot)?.Team == CStrikeTeam.TE).Select(p => p.Key));
+        }
+        else if (string.Equals(target, "@bot", StringComparison.OrdinalIgnoreCase))
+        {
+            targets.AddRange(_player.GetAllPlayers().Where(p => p.Key.IsFakeClient).Select(p => p.Key));
         }
 
-        return ECommandAction.Handled;
+        // find the name of 
+        else
+        {
+            targets.AddRange(_player.GetAllPlayers().Where(p => p.Key.Name.Contains(target, StringComparison.OrdinalIgnoreCase)).Select(p => p.Key));
+        }
+
+        return targets;
     }
 }
