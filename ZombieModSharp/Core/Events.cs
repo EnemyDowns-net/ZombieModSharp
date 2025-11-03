@@ -81,6 +81,9 @@ public class Events : IEvents, IEventListener
             case "cs_pre_restart":
                 OnPreRestart(e);
                 break;
+            case "round_freeze_end":
+                OnRoundFreezeEnd(e);
+                break;
             default:
                 break;
         }
@@ -136,6 +139,12 @@ public class Events : IEvents, IEventListener
     private void OnPreRestart(IGameEvent e)
     {
         _infect.OnRoundPreStart();
+    }
+
+    private void OnRoundFreezeEnd(IGameEvent e)
+    {
+        // start infection.
+        _infect.OnRoundFreezeEnd();
     }
 
     private void OnRoundStart(IGameEvent e)

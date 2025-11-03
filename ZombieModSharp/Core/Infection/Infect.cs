@@ -119,6 +119,12 @@ public class Infect : IInfect
         _modSharp.PrintChannelAll(HudPrintChannel.Chat, " \x04[Z:MS]\x01 Current game mode is \x05Humans vs. Zombies\x01, the goal for zombies is to infect all humans by knifing them.");
     }
 
+    public void OnRoundFreezeEnd()
+    {
+        // start countdown.
+        InitialCountDown();
+    }
+
     public void OnRoundEnd()
     {
         InfectStarted = false;
@@ -181,9 +187,108 @@ public class Infect : IInfect
             _modSharp.GetGameRules().TerminateRound(5.0f, RoundEndReason.CTsWin);
         }
     }
-    
+
     public bool IsInfectStarted()
     {
         return InfectStarted;
+    }
+
+    private void InitialCountDown()
+    {
+        int timerCount = 15;
+
+        var timer = _modSharp.PushTimer(new Func<TimerAction>(() =>
+        {
+            try
+            {
+                if (!IsInfectStarted())
+                    InfectMotherZombie();
+                    
+                return TimerAction.Continue;
+            }
+            catch (Exception e)
+            {
+                _logger.LogError("Error: {e}", e);
+                return TimerAction.Stop;
+            }
+        }), 15.0f, GameTimerFlags.StopOnRoundEnd | GameTimerFlags.StopOnMapEnd);
+
+        var countdown = _modSharp.PushTimer(new Func<TimerAction>(() =>
+        {
+            try
+            {
+                _modSharp.PrintChannelAll(HudPrintChannel.Center, $"First infection start in {timerCount} seconds");
+
+                if (timerCount <= 0)
+                    return TimerAction.Stop;
+
+                timerCount--;
+                return TimerAction.Continue;
+            }
+            catch (Exception e)
+            {
+                _logger.LogError("Error: {e}", e);
+                return TimerAction.Stop;
+            }
+        }), 1.0f, GameTimerFlags.Repeatable | GameTimerFlags.StopOnRoundEnd | GameTimerFlags.StopOnMapEnd);
+    }
+    
+    private void InfectMotherZombie()
+    {
+        // Get All Player with motherzombie status, and alive.
+        var candidate = _player.GetAllPlayers().Where(p => p.Value.MotherZombieStatus == MotherZombieStatus.None
+            && (_entityManager.FindPlayerControllerBySlot(p.Key.Slot)?.IsAlive ?? false));
+            
+        var totalPlayer = _player.GetAllPlayers().Where(p => _entityManager.FindPlayerControllerBySlot(p.Key.Slot)?.IsAlive ?? false).Count();
+
+        // Calculate
+        var requireZm = totalPlayer / 7;
+
+        // if zombie is less than 0 then make one.
+        if (requireZm <= 0)
+            requireZm = 1;
+
+        int made = 0;
+
+        // this part is mother zombie reset
+        if (requireZm > candidate.Count())
+        {
+            // if any candidate left here.
+            if (candidate.Any())
+            {
+                // we just confirm their infection right the way.
+                foreach (var player in candidate)
+                {
+                    made++;
+                    InfectPlayer(player.Key, null, true, false);
+                    player.Value.MotherZombieStatus = MotherZombieStatus.Chosen;
+                }
+            }
+
+            // reset status
+            foreach (var player in _player.GetAllPlayers().Where(p => p.Value.MotherZombieStatus == MotherZombieStatus.Last))
+            {
+                player.Value.MotherZombieStatus = MotherZombieStatus.None;
+            }
+
+            // getting candidate again.
+            candidate = _player.GetAllPlayers().Where(p => p.Value.MotherZombieStatus == MotherZombieStatus.None
+                && (_entityManager.FindPlayerControllerBySlot(p.Key.Slot)?.IsAlive ?? false));
+
+            _modSharp.PrintChannelAll(HudPrintChannel.Chat, "Mother Zombie has been reset.");
+        }
+
+        if (requireZm - made <= 0)
+            return;
+        
+        var random = new Random();
+        var shuffledCandidates = candidate.OrderBy(x => random.Next()).ToList();
+        var selectedMotherZombies = shuffledCandidates.Take(requireZm - made);
+
+        foreach(var player in selectedMotherZombies)
+        {
+            InfectPlayer(player.Key, null, true, false);
+            player.Value.MotherZombieStatus = MotherZombieStatus.Chosen;
+        }
     }
 }

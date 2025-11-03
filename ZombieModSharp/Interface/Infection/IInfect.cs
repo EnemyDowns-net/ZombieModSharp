@@ -9,6 +9,7 @@ public interface IInfect
     public void OnRoundPreStart();
     public void OnRoundStart();
     public void OnRoundEnd();
+    public void OnRoundFreezeEnd();
     public void CheckGameStatus();
     public bool IsInfectStarted();
 }
