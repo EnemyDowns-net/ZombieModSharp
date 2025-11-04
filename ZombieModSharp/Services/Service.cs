@@ -4,6 +4,7 @@ using ZombieModSharp.Core.Infection;
 using ZombieModSharp.Core.Player;
 using ZombieModSharp.Interface.Command;
 using ZombieModSharp.Interface.Events;
+using ZombieModSharp.Interface.Hooks;
 using ZombieModSharp.Interface.Infection;
 using ZombieModSharp.Interface.Listeners;
 using ZombieModSharp.Interface.Player;
@@ -20,7 +21,8 @@ public static class ServiceCollectionExtensions
             .AddSingleton<IInfect, Infect>()
             .AddSingleton<IListeners, Listeners>()
             .AddSingleton<IZTele, ZTele>()
-            .AddSingleton<ICommand, Command>();
+            .AddSingleton<ICommand, Command>()
+            .AddSingleton<IHooks, Hooks>();
         return services;
     }
 }

@@ -13,6 +13,7 @@ using ZombieModSharp.Core.Infection;
 using ZombieModSharp.Core.Player;
 using ZombieModSharp.Interface.Command;
 using ZombieModSharp.Interface.Events;
+using ZombieModSharp.Interface.Hooks;
 using ZombieModSharp.Interface.Infection;
 using ZombieModSharp.Interface.Listeners;
 using ZombieModSharp.Interface.Player;
@@ -36,6 +37,7 @@ public sealed class ZombieModSharp : IModSharpModule
     private readonly IListeners _listeners;
     private readonly IZTele _ztele;
     private readonly ICommand _command;
+    private readonly IHooks _hooks;
 
     // outside module
 
@@ -80,6 +82,7 @@ public sealed class ZombieModSharp : IModSharpModule
         _eventListener = _serviceProvider.GetRequiredService<IEvents>();
         _listeners = _serviceProvider.GetRequiredService<IListeners>();
         _command = _serviceProvider.GetRequiredService<ICommand>();
+        _hooks = _serviceProvider.GetRequiredService<IHooks>();
     }
 
     public bool Init()
@@ -101,6 +104,7 @@ public sealed class ZombieModSharp : IModSharpModule
     {
         _logger.LogInformation("Why don't you stay and play for a while?");
         _eventListener.RegisterEvents();
+        _hooks.PostInit();
     }
 
     public void OnAllModulesLoaded()

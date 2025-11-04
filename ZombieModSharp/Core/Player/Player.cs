@@ -36,4 +36,14 @@ public class Player: IPlayer
     {
         Players.Remove(client);
     }
+
+    public bool IsClientInfected(IGameClient client)
+    {
+        return Players[client].IsZombie;
+    }
+
+    public bool IsClientHuman(IGameClient client)
+    {
+        return !Players[client].IsZombie;
+    }
 }
