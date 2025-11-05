@@ -105,6 +105,7 @@ public sealed class ZombieModSharp : IModSharpModule
         _logger.LogInformation("Why don't you stay and play for a while?");
         _eventListener.RegisterEvents();
         _hooks.PostInit();
+        _command.PostInit();
     }
 
     public void OnAllModulesLoaded()
