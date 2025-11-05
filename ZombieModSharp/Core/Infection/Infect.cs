@@ -43,11 +43,40 @@ public class Infect : IInfect
             InfectStarted = true;
         }
 
-        var clientController = _entityManager.FindPlayerControllerBySlot(client.Slot);
-        clientController?.SwitchTeam(CStrikeTeam.TE);
-
         var zmPlayer = _player.GetPlayer(client);
         zmPlayer.IsZombie = true;
+
+        var clientController = _entityManager.FindPlayerControllerBySlot(client.Slot);
+
+        if(clientController == null)
+        {
+            _logger.LogError("The client controller is null!");
+            return;
+        }
+
+        clientController.SwitchTeam(CStrikeTeam.TE);
+
+        // implement model changed and health.
+        var pawn = clientController.GetPlayerPawn();
+
+        if(pawn == null)
+        {
+            _logger.LogError("The client controller is null!");
+            return;
+        }
+
+        pawn.Health = 8000;
+        pawn.ArmorValue = 0;
+        try
+        {
+            pawn.GetItemService()!.HasHelmet = false;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Error: {ex}", ex);
+        }
+        
+        pawn.SetModel("");
 
         if (attacker == null)
             return;
@@ -77,7 +106,7 @@ public class Infect : IInfect
         {
             fakeEvent.Dispose();
         }
-    }
+        }
 
     public void HumanizeClient(IGameClient client, bool force = false)
     {
@@ -86,11 +115,31 @@ public class Infect : IInfect
             return;
         }
 
-        var clientController = _entityManager.FindPlayerControllerBySlot(client.Slot);
-        clientController?.SwitchTeam(CStrikeTeam.CT);
-
         var zmPlayer = _player.GetPlayer(client);
         zmPlayer.IsZombie = false;
+
+        var clientController = _entityManager.FindPlayerControllerBySlot(client.Slot);
+
+        if(clientController == null)
+        {
+            _logger.LogError("The client controller is null!");
+            return;
+        }
+
+        clientController.SwitchTeam(CStrikeTeam.CT);
+
+        // implement model changed and health.
+        var pawn = clientController.GetPawn();
+
+        if(pawn == null)
+        {
+            _logger.LogError("The client controller is null!");
+            return;
+        }
+
+        pawn.Health = 100;
+        pawn.ArmorValue = 100;
+        pawn.SetModel("");
     }
 
     public void OnRoundPreStart()
