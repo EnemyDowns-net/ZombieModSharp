@@ -35,8 +35,9 @@ public class Command : ICommand
 
     public void PostInit()
     {
-        _clientManager.InstallCommandCallback("ms_ztele", ZTeleCommand);
-        _clientManager.InstallCommandCallback("ms_infect", InfectCommand);
+        _clientManager.InstallCommandCallback("ztele", ZTeleCommand);
+        _clientManager.InstallCommandCallback("infect", InfectCommand);
+        _clientManager.InstallCommandCallback("human", HumanizeCommand);
     }
 
     private ECommandAction ZTeleCommand(IGameClient client, StringCommand command)
@@ -72,6 +73,32 @@ public class Command : ICommand
         {
             _infect.InfectPlayer(player, null, false, true);
             _modsharp.PrintChannelAll(HudPrintChannel.Chat, $"Admin {client.Name} has infected {player.Name} via command");
+        }
+
+        return ECommandAction.Skipped;
+    }
+
+    private ECommandAction HumanizeCommand(IGameClient client, StringCommand command)
+    {
+        if (command.ArgCount < 1)
+        {
+            ReplyToCommand(client, "Usage: ms_infect <target>");
+            return ECommandAction.Stopped;
+        }
+
+        var arg = command.GetArg(1);
+        var target = GetTargets(client, arg);
+
+        if (target == null || target.Count == 0)
+        {
+            ReplyToCommand(client, "No target is found");
+            return ECommandAction.Stopped;
+        }
+
+        foreach (var player in target)
+        {
+            _infect.HumanizeClient(player, true);
+            _modsharp.PrintChannelAll(HudPrintChannel.Chat, $"Admin {client.Name} has revived {player.Name} via command");
         }
 
         return ECommandAction.Skipped;
