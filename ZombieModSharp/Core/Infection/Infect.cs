@@ -9,6 +9,7 @@ using ZombieModSharp.Interface.Player;
 using ZombieModSharp.Interface.Infection;
 using Sharp.Shared;
 using ZombieModSharp.Enums;
+using Sharp.Shared.Types;
 
 namespace ZombieModSharp.Core.Infection;
 
@@ -75,11 +76,39 @@ public class Infect : IInfect
         {
             _logger.LogError("Error: {ex}", ex);
         }
-        
-        pawn.SetModel("phase2/characters/models/tm_phoenix/tm_phoenix_ag2.vmdl");
+
+        pawn.SetModel("characters/models/tm_phoenix/tm_phoenix.vmdl");
+
+        // forcing drop all weapon.
+        var weapons = pawn.GetWeaponService()?.GetMyWeapons();
+
+        if (weapons == null)
+        {
+            _logger.LogError("Client weapon is null");
+            return;
+        }
+
+        // drop all weapon that has hammerid.
+        foreach (var weapon in weapons)
+        {
+            var entity = _entityManager.FindEntityByHandle(weapon)?.As<IBaseWeapon>();
+
+            if (entity == null)
+                continue;
+
+            if (!string.IsNullOrEmpty(entity.HammerId))
+            {
+                pawn.DropWeapon(entity);
+            }
+        }
+
+        pawn.RemoveAllItems();
+        pawn.GiveNamedItem("weapon_knife");
 
         if (attacker == null)
             return;
+
+        CheckGameStatus();
 
         // Fire fake event here.
         var fakeEvent = _eventManager.CreateEvent("player_death", true);
@@ -106,7 +135,7 @@ public class Infect : IInfect
         {
             fakeEvent.Dispose();
         }
-        }
+    }
 
     public void HumanizeClient(IGameClient client, bool force = false)
     {
@@ -139,7 +168,7 @@ public class Infect : IInfect
 
         pawn.Health = 100;
         pawn.ArmorValue = 100;
-        pawn.SetModel("phase2/characters/models/ctm_sas/ctm_sas_ag2.vmdl");
+        pawn.SetModel("characters/models/ctm_sas/ctm_sas.vmdl");
     }
 
     public void OnRoundPreStart()
@@ -172,6 +201,7 @@ public class Infect : IInfect
     {
         // start countdown.
         InitialCountDown();
+        //_modSharp.PrintChannelAll(HudPrintChannel.Chat, "Infect round freeze is called");
     }
 
     public void OnRoundEnd()
@@ -185,7 +215,6 @@ public class Infect : IInfect
             var client = kvp.Key;
             var zmPlayer = kvp.Value;
 
-            zmPlayer.IsZombie = false;
             if (zmPlayer.MotherZombieStatus == MotherZombieStatus.Chosen)
                 zmPlayer.MotherZombieStatus = MotherZombieStatus.Last;
         }
@@ -237,14 +266,11 @@ public class Infect : IInfect
         }
     }
 
-    public bool IsInfectStarted()
-    {
-        return InfectStarted;
-    }
-
     private void InitialCountDown()
     {
         int timerCount = 15;
+
+        _modSharp.PrintToChatAll("Infection should start here!");
 
         var timer = _modSharp.PushTimer(new Func<TimerAction>(() =>
         {
@@ -281,13 +307,13 @@ public class Infect : IInfect
             }
         }), 1.0f, GameTimerFlags.Repeatable | GameTimerFlags.StopOnRoundEnd | GameTimerFlags.StopOnMapEnd);
     }
-    
+
     private void InfectMotherZombie()
     {
         // Get All Player with motherzombie status, and alive.
         var candidate = _player.GetAllPlayers().Where(p => p.Value.MotherZombieStatus == MotherZombieStatus.None
             && (_entityManager.FindPlayerControllerBySlot(p.Key.Slot)?.IsAlive ?? false));
-            
+
         var totalPlayer = _player.GetAllPlayers().Where(p => _entityManager.FindPlayerControllerBySlot(p.Key.Slot)?.IsAlive ?? false).Count();
 
         // Calculate
@@ -329,15 +355,25 @@ public class Infect : IInfect
 
         if (requireZm - made <= 0)
             return;
-        
+
         var random = new Random();
         var shuffledCandidates = candidate.OrderBy(x => random.Next()).ToList();
         var selectedMotherZombies = shuffledCandidates.Take(requireZm - made);
 
-        foreach(var player in selectedMotherZombies)
+        foreach (var player in selectedMotherZombies)
         {
             InfectPlayer(player.Key, null, true, false);
             player.Value.MotherZombieStatus = MotherZombieStatus.Chosen;
         }
+    }
+
+    public bool IsInfectStarted()
+    {
+        return InfectStarted;
+    }
+
+    public void SetInfectStarted(bool result)
+    {
+        InfectStarted = result;
     }
 }

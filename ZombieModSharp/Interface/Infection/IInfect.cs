@@ -12,4 +12,5 @@ public interface IInfect
     public void OnRoundFreezeEnd();
     public void CheckGameStatus();
     public bool IsInfectStarted();
+    public void SetInfectStarted(bool result);
 }

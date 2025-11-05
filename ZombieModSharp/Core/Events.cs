@@ -52,9 +52,12 @@ public class Events : IEvents, IEventListener
     {
         _eventManager.HookEvent("player_hurt");
         _eventManager.HookEvent("player_death");
+        _eventManager.HookEvent("player_spawn");
         _eventManager.HookEvent("round_end");
         _eventManager.HookEvent("cs_pre_restart");
         _eventManager.HookEvent("round_start");
+        _eventManager.HookEvent("round_freeze_end");
+        _eventManager.HookEvent("warmup_end");
     }
 
     public void FireGameEvent(IGameEvent e)
@@ -84,6 +87,9 @@ public class Events : IEvents, IEventListener
             case "round_freeze_end":
                 OnRoundFreezeEnd(e);
                 break;
+            case "warmup_end":
+                OnWarmupEnd(e);
+                break;
             default:
                 break;
         }
@@ -96,6 +102,7 @@ public class Events : IEvents, IEventListener
 
         var attackerId = new UserID((ushort)e.GetInt("attacker"));
         var attackerClient = _clientManager.GetGameClient(attackerId);
+        var weapon = e.GetString("weapon");
 
         if (client == null || attackerClient == null)
         {
@@ -112,13 +119,15 @@ public class Events : IEvents, IEventListener
 
         if (zmClient.IsHuman() && zmAttacker.IsInfected())
         {
-            // Infect the player.
-            _infect.InfectPlayer(client, attackerClient);
+            if (weapon.Contains("knife"))
+            {
+                // Infect the player.
+                _infect.InfectPlayer(client, attackerClient);
+            }
         }
         else if (zmClient.IsInfected() && zmAttacker.IsHuman())
         {
             // Get weapon and calculate damage and knockback.
-            var weapon = e.GetString("weapon");
             var damage = e.GetInt("dmg_health");
         }
     }
@@ -133,7 +142,7 @@ public class Events : IEvents, IEventListener
         var attackerId = new UserID((ushort)e.GetInt("attacker"));
         var attackerClient = _clientManager.GetGameClient(attackerId);
 
-        _modSharp.PrintChannelAll(HudPrintChannel.Chat, $"Client {client?.Name ?? "Unknown Player"} killed by {attackerClient?.Name ?? "Unknown Player"}");
+        //_modSharp.PrintChannelAll(HudPrintChannel.Chat, $"Client {client?.Name ?? "Unknown Player"} killed by {attackerClient?.Name ?? "Unknown Player"}");
     }
 
     private void OnPreRestart(IGameEvent e)
@@ -144,6 +153,7 @@ public class Events : IEvents, IEventListener
     private void OnRoundFreezeEnd(IGameEvent e)
     {
         // start infection.
+        // _modSharp.PrintChannelAll(HudPrintChannel.Chat, "Infect round freeze is called");
         _infect.OnRoundFreezeEnd();
     }
 
@@ -162,13 +172,18 @@ public class Events : IEvents, IEventListener
         _infect.OnRoundEnd();
     }
 
+    private void OnWarmupEnd(IGameEvent e)
+    {
+        _infect.SetInfectStarted(false);
+    }
+
     private void OnPlayerSpawn(IGameEvent e)
     {
         var userId = new UserID((ushort)e.GetInt("userid"));
         var client = _clientManager.GetGameClient(userId);
 
-        _modSharp.PrintChannelAll(HudPrintChannel.Chat, $"Client {client?.Name ?? "Unknown Player"} Spawned");
-        _logger.LogInformation("PlayerSpawn: {Name}", client?.Name ?? "Unknown Player");
+        // _modSharp.PrintChannelAll(HudPrintChannel.Chat, $"Client {client?.Name ?? "Unknown Player"} Spawned");
+        // _logger.LogInformation("PlayerSpawn: {Name}", client?.Name ?? "Unknown Player");
 
         // go apply spawn stuff.
         // ignore Spec and none team
