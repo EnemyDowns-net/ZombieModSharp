@@ -32,13 +32,13 @@ public class Listeners : IListeners, IClientListener
 
     public void OnClientPutInServer(IGameClient client)
     {
-        _logger.LogInformation("ClientPutInServer: {Name}", client.Name);
+        //_logger.LogInformation("ClientPutInServer: {Name}", client.Name);
         _player.GetPlayer(client);
     }
 
     public void OnClientDisconnecting(IGameClient client, NetworkDisconnectionReason reason)
     {
-        _logger.LogInformation("ClientDisconnect: {Name}", client.Name);
+        //_logger.LogInformation("ClientDisconnect: {Name}", client.Name);
         _player.RemovePlayer(client);
     }
 }
