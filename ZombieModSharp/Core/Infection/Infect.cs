@@ -76,7 +76,7 @@ public class Infect : IInfect
             _logger.LogError("Error: {ex}", ex);
         }
         
-        pawn.SetModel("");
+        pawn.SetModel("phase2/characters/models/tm_phoenix/tm_phoenix_ag2.vmdl");
 
         if (attacker == null)
             return;
@@ -139,7 +139,7 @@ public class Infect : IInfect
 
         pawn.Health = 100;
         pawn.ArmorValue = 100;
-        pawn.SetModel("");
+        pawn.SetModel("phase2/characters/models/ctm_sas/ctm_sas_ag2.vmdl");
     }
 
     public void OnRoundPreStart()

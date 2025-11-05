@@ -185,12 +185,12 @@ public class Events : IEvents, IEventListener
         if (_infect.IsInfectStarted())
         {
             // infect or
-            var timer = _modSharp.PushTimer(() => { _infect.InfectPlayer(client); }, 0.05, GameTimerFlags.None);
+            var timer = _modSharp.PushTimer(() => { _infect.InfectPlayer(client); }, 0.05, GameTimerFlags.None | GameTimerFlags.StopOnMapEnd | GameTimerFlags.StopOnMapEnd);
         }
 
         else
         {
-            var timer = _modSharp.PushTimer(() => { _infect.HumanizeClient(client); }, 0.05, GameTimerFlags.None);
+            var timer = _modSharp.PushTimer(() => { _infect.HumanizeClient(client); }, 0.05, GameTimerFlags.None | GameTimerFlags.StopOnMapEnd | GameTimerFlags.StopOnMapEnd);
         }
 
         _ztele.OnPlayerSpawn(client);
