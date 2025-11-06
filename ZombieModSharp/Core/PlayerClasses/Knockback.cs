@@ -44,26 +44,20 @@ public class Knockback : IKnockback
         }
 
         var attackerEye = attackerPawn.GetEyeAngles();
-        attackerEye.AnglesToVector(out var vecKnockback, out var right, out var up);
+        var foward = attackerEye.AnglesToVectorForward();
 
-        var classKnockback = 1.0f;
+        var classKnockback = 4.0f;
         var weaponknockback = 1.0f;
         var hitgroupsKnockback = 1.0f;
 
-        var pushVelocity = vecKnockback * damage * classKnockback * weaponknockback * hitgroupsKnockback;
-        //client.PlayerPawn.Value?.AbsVelocity.Add(pushVelocity);
+        var pushVelocity = foward * damage * classKnockback * weaponknockback * hitgroupsKnockback;
 
         var playerPawn = _entityManager.FindPlayerControllerBySlot(client.Slot)?.GetPlayerPawn();
 
         if (playerPawn == null)
             return;
 
-        var vel = playerPawn.GetAbsVelocity();
-
-        vel.X += pushVelocity.X;
-        vel.Y += pushVelocity.Y;
-        vel.Z += pushVelocity.Z;
-
-        playerPawn.Teleport(velocity: vel);
+        var veloCity = playerPawn.GetAbsVelocity();
+        playerPawn.Teleport(null, null, veloCity + pushVelocity);
     }
 }
