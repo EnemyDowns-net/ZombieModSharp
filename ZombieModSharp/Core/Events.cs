@@ -10,6 +10,8 @@ using Sharp.Shared.Enums;
 using ZombieModSharp.Interface.Infection;
 using Sharp.Shared;
 using ZombieModSharp.Interface.ZTele;
+using ZombieModSharp.Interface.PlayerClasses;
+using ZombieModSharp.Core.PlayerClasses;
 
 namespace ZombieModSharp.Core;
 
@@ -24,13 +26,14 @@ public class Events : IEvents, IEventListener
     private readonly IInfect _infect;
     private readonly IModSharp _modSharp;
     private readonly IZTele _ztele;
+    private readonly IKnockback _knockback;
 
     public int ListenerVersion => IEventListener.ApiVersion;
     public int ListenerPriority => 0;
 
     public bool RoundEnded { get; private set; } = false;
 
-    public Events(ISharedSystem sharedSystem, ILogger<Events> logger, IPlayer player, IInfect infect, IZTele ztele)
+    public Events(ISharedSystem sharedSystem, ILogger<Events> logger, IPlayer player, IInfect infect, IZTele ztele, IKnockback knockback)
     {
         _sharedSystem = sharedSystem;
         _eventManager = _sharedSystem.GetEventManager();
@@ -41,6 +44,7 @@ public class Events : IEvents, IEventListener
         _infect = infect;
         _entityManager = _sharedSystem.GetEntityManager();
         _ztele = ztele;
+        _knockback = knockback;
     }
 
     public void Init()
@@ -129,6 +133,8 @@ public class Events : IEvents, IEventListener
         {
             // Get weapon and calculate damage and knockback.
             var damage = e.GetInt("dmg_health");
+            var hitGroup = e.GetInt("hitgroup");
+            _knockback.KnockbackClient(client, attackerClient, weapon, damage, hitGroup);
         }
     }
 

@@ -17,6 +17,7 @@ using ZombieModSharp.Interface.Hooks;
 using ZombieModSharp.Interface.Infection;
 using ZombieModSharp.Interface.Listeners;
 using ZombieModSharp.Interface.Player;
+using ZombieModSharp.Interface.PlayerClasses;
 using ZombieModSharp.Interface.ZTele;
 using ZombieModSharp.Services;
 
@@ -38,6 +39,7 @@ public sealed class ZombieModSharp : IModSharpModule
     private readonly IZTele _ztele;
     private readonly ICommand _command;
     private readonly IHooks _hooks;
+    private readonly IKnockback _knockback;
 
     // outside module
 
@@ -83,6 +85,7 @@ public sealed class ZombieModSharp : IModSharpModule
         _listeners = _serviceProvider.GetRequiredService<IListeners>();
         _command = _serviceProvider.GetRequiredService<ICommand>();
         _hooks = _serviceProvider.GetRequiredService<IHooks>();
+        _knockback = _serviceProvider.GetRequiredService<IKnockback>();
     }
 
     public bool Init()
