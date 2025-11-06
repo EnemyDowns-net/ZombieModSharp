@@ -174,7 +174,6 @@ public class Events : IEvents, IEventListener
     {
         RoundEnded = true;
         //_modSharp.PrintChannelAll(HudPrintChannel.Chat, $"The round just ended");
-        // _infect.OnRoundEnd();
         _infect.OnRoundEnd();
     }
 
@@ -187,6 +186,7 @@ public class Events : IEvents, IEventListener
     {
         var userId = new UserID((ushort)e.GetInt("userid"));
         var client = _clientManager.GetGameClient(userId);
+        var pawn = e.GetPlayerController("userid");
 
         // _modSharp.PrintChannelAll(HudPrintChannel.Chat, $"Client {client?.Name ?? "Unknown Player"} Spawned");
         // _logger.LogInformation("PlayerSpawn: {Name}", client?.Name ?? "Unknown Player");
@@ -196,9 +196,7 @@ public class Events : IEvents, IEventListener
         if (client == null)
             return;
 
-        var clientEnt = _entityManager.FindPlayerControllerBySlot(client.Slot);
-
-        var team = clientEnt?.Team ?? CStrikeTeam.UnAssigned;
+        var team = pawn?.Team ?? CStrikeTeam.UnAssigned;
 
         if (team == CStrikeTeam.UnAssigned || team == CStrikeTeam.Spectator)
             return;
