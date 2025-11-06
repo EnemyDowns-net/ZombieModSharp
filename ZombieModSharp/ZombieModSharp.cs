@@ -95,7 +95,12 @@ public sealed class ZombieModSharp : IModSharpModule
 
         _listeners.Init();
         _eventListener.Init();
+
+        var _gamedata = _sharedSystem.GetModSharp().GetGameData();
+        _gamedata.Register("ZombieModSharp.jsonc");
+
         return true;
+
     }
 
     public void Shutdown()

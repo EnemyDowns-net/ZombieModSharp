@@ -1,0 +1,22 @@
+{
+    "Addresses": {
+        "ServerMovementUnlock": {
+            "library": "server",
+            "linux": "0F 87 ? ? ? ? F3 0F 10 35 ? ? ? ? F3 0F 11 B5 ? ? ? ? 4C 89 EE",
+            "windows": "0F 86 B0 ? ? ? F3 0F 58 D3"
+        }
+    },
+    "Patches": {
+        "ServerMovementUnlockPatch": {
+            "address": "ServerMovementUnlock",
+            "linux": {
+                "patch": "90 90 90 90 90 90",
+                "validate": "0F 87"
+            },
+            "windows": {
+                "patch": "E9 B1 00 00 00 90",
+                "validate": "0F 86"
+            }
+        }
+    }
+}
