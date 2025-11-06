@@ -103,7 +103,7 @@ public class Infect : IInfect
         }
 
         pawn.RemoveAllItems();
-        pawn.GiveNamedItem("weapon_knife");
+        pawn.GiveNamedItem(EconItemId.KnifeTe);
 
         if (attacker == null)
             return;
