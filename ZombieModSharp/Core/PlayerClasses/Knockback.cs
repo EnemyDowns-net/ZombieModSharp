@@ -15,6 +15,8 @@ public class Knockback : IKnockback
     private readonly IPlayer _player;
     private readonly IEntityManager _entityManager;
 
+    public static bool ClassicMode = true;
+
     public Knockback(ISharedSystem sharedSystem, ILogger<Knockback> logger, IPlayer player)
     {
         _sharedSystem = sharedSystem;
@@ -46,7 +48,7 @@ public class Knockback : IKnockback
         var attackerEye = attackerPawn.GetEyeAngles();
         attackerEye.AnglesToVector(out var vecKnockback, out var right, out var up);
 
-        var classKnockback = 1.0f;
+        var classKnockback = 3.0f;
         var weaponknockback = 1.0f;
         var hitgroupsKnockback = 1.0f;
 
@@ -58,12 +60,13 @@ public class Knockback : IKnockback
         if (playerPawn == null)
             return;
 
-        var vel = playerPawn.GetAbsVelocity();
+        if (ClassicMode)
+        {
+            var veloCity = playerPawn.GetAbsVelocity();
+            playerPawn.Teleport(null, null, veloCity + pushVelocity);
+        }
 
-        vel.X += pushVelocity.X;
-        vel.Y += pushVelocity.Y;
-        vel.Z += pushVelocity.Z;
-
-        playerPawn.Teleport(velocity: vel);
+        else
+            playerPawn.ApplyAbsVelocityImpulse(pushVelocity);
     }
 }

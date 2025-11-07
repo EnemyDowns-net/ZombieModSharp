@@ -6,6 +6,7 @@ using Sharp.Shared.Objects;
 using Sharp.Shared.Types;
 using ZombieModSharp.Core.Infection;
 using ZombieModSharp.Core.Player;
+using ZombieModSharp.Core.PlayerClasses;
 using ZombieModSharp.Entities;
 using ZombieModSharp.Interface.Command;
 using ZombieModSharp.Interface.Infection;
@@ -38,6 +39,7 @@ public class Command : ICommand
         _clientManager.InstallCommandCallback("ztele", ZTeleCommand);
         _clientManager.InstallCommandCallback("infect", InfectCommand);
         _clientManager.InstallCommandCallback("human", HumanizeCommand);
+        _clientManager.InstallCommandCallback("kb", KnockbackSwitchCommand);
     }
 
     private ECommandAction ZTeleCommand(IGameClient client, StringCommand command)
@@ -101,6 +103,13 @@ public class Command : ICommand
             _modsharp.PrintChannelAll(HudPrintChannel.Chat, $"Admin {client.Name} has revived {player.Name} via command");
         }
 
+        return ECommandAction.Skipped;
+    }
+
+    private ECommandAction KnockbackSwitchCommand(IGameClient client, StringCommand command)
+    {
+        Knockback.ClassicMode = !Knockback.ClassicMode;
+        _modsharp.PrintToChatAll($"Knockback Classic Mode: {Knockback.ClassicMode}");
         return ECommandAction.Skipped;
     }
 
