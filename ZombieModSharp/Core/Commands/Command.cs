@@ -19,7 +19,6 @@ public class Command : ICommand
     private readonly IInfect _infect;
     private readonly ISharedSystem _sharedSystem;
     private readonly IClientManager _clientManager;
-    private readonly IEntityManager _entityManager;
     private readonly IModSharp _modsharp;
 
     public Command(IPlayer player, IZTele ztele, IInfect infect, ISharedSystem sharedSystem)
@@ -29,7 +28,6 @@ public class Command : ICommand
         _infect = infect;
         _sharedSystem = sharedSystem;
         _clientManager = _sharedSystem.GetClientManager();
-        _entityManager = _sharedSystem.GetEntityManager();
         _modsharp = _sharedSystem.GetModSharp();
     }
 
@@ -143,12 +141,12 @@ public class Command : ICommand
         else if (string.Equals(target, "@ct", StringComparison.OrdinalIgnoreCase))
         {
             targets.AddRange(_player.GetAllPlayers().Where(p =>
-                _entityManager.FindPlayerControllerBySlot(p.Key.Slot)?.Team == CStrikeTeam.CT).Select(p => p.Key));
+                p.Key.GetPlayerController()?.Team == CStrikeTeam.CT).Select(p => p.Key));
         }
         else if (string.Equals(target, "@t", StringComparison.OrdinalIgnoreCase))
         {
             targets.AddRange(_player.GetAllPlayers().Where(p =>
-                _entityManager.FindPlayerControllerBySlot(p.Key.Slot)?.Team == CStrikeTeam.TE).Select(p => p.Key));
+                p.Key.GetPlayerController()?.Team == CStrikeTeam.TE).Select(p => p.Key));
         }
         else if (string.Equals(target, "@bot", StringComparison.OrdinalIgnoreCase))
         {

@@ -15,6 +15,7 @@ namespace ZombieModSharp.Core.Infection;
 
 public class Infect : IInfect
 {
+    private readonly ISharedSystem _sharedSystem;
     private readonly IEntityManager _entityManager;
     private readonly IEventManager _eventManager;
     private readonly ILogger<Infect> _logger;
@@ -23,10 +24,11 @@ public class Infect : IInfect
 
     private bool InfectStarted = false;
 
-    public Infect(IEntityManager entityManager, IEventManager eventManager, ILogger<Infect> logger, IPlayer player, IModSharp modSharp)
+    public Infect(ISharedSystem sharedSystem, ILogger<Infect> logger, IPlayer player, IModSharp modSharp)
     {
-        _entityManager = entityManager;
-        _eventManager = eventManager;
+        _sharedSystem = sharedSystem;
+        _entityManager = _sharedSystem.GetEntityManager();
+        _eventManager = _sharedSystem.GetEventManager();
         _logger = logger;
         _player = player;
         _modSharp = modSharp;
@@ -47,7 +49,7 @@ public class Infect : IInfect
         var zmPlayer = _player.GetPlayer(client);
         zmPlayer.IsZombie = true;
 
-        var clientController = _entityManager.FindPlayerControllerBySlot(client.Slot);
+        var clientController = client.GetPlayerController();
 
         if(clientController == null)
         {
@@ -147,7 +149,7 @@ public class Infect : IInfect
         var zmPlayer = _player.GetPlayer(client);
         zmPlayer.IsZombie = false;
 
-        var clientController = _entityManager.FindPlayerControllerBySlot(client.Slot);
+        var clientController = client.GetPlayerController();
 
         if(clientController == null)
         {
@@ -182,7 +184,7 @@ public class Infect : IInfect
 
             zmPlayer.IsZombie = false;
 
-            var controller = _entityManager.FindPlayerControllerBySlot(client.Slot);
+            var controller = client.GetPlayerController();
             if (controller == null)
             {
                 continue;
@@ -237,7 +239,7 @@ public class Infect : IInfect
             var client = kvp.Key;
             var zmPlayer = kvp.Value;
 
-            var controller = _entityManager.FindPlayerControllerBySlot(client.Slot);
+            var controller = client.GetPlayerController();
             if (controller == null)
             {
                 continue;
@@ -312,9 +314,9 @@ public class Infect : IInfect
     {
         // Get All Player with motherzombie status, and alive.
         var candidate = _player.GetAllPlayers().Where(p => p.Value.MotherZombieStatus == MotherZombieStatus.None
-            && (_entityManager.FindPlayerControllerBySlot(p.Key.Slot)?.IsAlive ?? false));
+            && (p.Key.GetPlayerController()?.IsAlive ?? false));
 
-        var totalPlayer = _player.GetAllPlayers().Where(p => _entityManager.FindPlayerControllerBySlot(p.Key.Slot)?.IsAlive ?? false).Count();
+        var totalPlayer = _player.GetAllPlayers().Where(p => p.Key.GetPlayerController()?.IsAlive ?? false).Count();
 
         // Calculate
         var requireZm = totalPlayer / 7;
@@ -348,7 +350,7 @@ public class Infect : IInfect
 
             // getting candidate again.
             candidate = _player.GetAllPlayers().Where(p => p.Value.MotherZombieStatus == MotherZombieStatus.None
-                && (_entityManager.FindPlayerControllerBySlot(p.Key.Slot)?.IsAlive ?? false));
+                && (p.Key.GetPlayerController()?.IsAlive ?? false));
 
             _modSharp.PrintChannelAll(HudPrintChannel.Chat, "Mother Zombie has been reset.");
         }
