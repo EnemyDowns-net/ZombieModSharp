@@ -1,5 +1,6 @@
 using Sharp.Shared;
 using Sharp.Shared.Enums;
+using Sharp.Shared.GameEntities;
 using Sharp.Shared.HookParams;
 using Sharp.Shared.Managers;
 using Sharp.Shared.Types;
@@ -14,6 +15,7 @@ public class Hooks : IHooks
     private readonly IPlayer _player;
     private readonly IHookManager _hookManager;
     private readonly IModSharp _modsharp;
+    private readonly IEntityManager _entityManager;
 
     public Hooks(ISharedSystem sharedSystem, IPlayer player)
     {
@@ -21,11 +23,13 @@ public class Hooks : IHooks
         _player = player;
         _hookManager = _sharedSystem.GetHookManager();
         _modsharp = _sharedSystem.GetModSharp();
+        _entityManager = _sharedSystem.GetEntityManager();
     }
 
     public void PostInit()
     {
         _hookManager.PlayerWeaponCanEquip.InstallHookPre(OnCanEquip);
+        // _hookManager.PlayerDispatchTraceAttack.InstallHookPost(OnTakeDamaged);
     }
 
     private HookReturnValue<bool> OnCanEquip(IPlayerWeaponCanEquipHookParams param, HookReturnValue<bool> result)
@@ -45,5 +49,35 @@ public class Hooks : IHooks
 
         //_modsharp.PrintChannelAll(HudPrintChannel.Chat, $"This is {result.Action} and {result.ReturnValue}");
         return result;
+    }
+
+    private void OnTakeDamaged(IPlayerDispatchTraceAttackHookParams param, HookReturnValue<long> result)
+    {
+        var attacker = _entityManager.FindEntityByHandle(param.AttackerHandle)?.As<IPlayerController>();
+
+        if (attacker == null)
+        {
+            _modsharp.PrintToChatAll("Attacker is null!");
+            return;
+        }
+
+        var client = param.Controller;
+
+        if (client == null)
+        {
+            _modsharp.PrintToChatAll("Client is null!");
+            return;
+        }
+
+        var hitGroup = param.HitGroup;
+        var damage = param.Damage;
+        var weaponEnt = _entityManager.FindEntityByHandle(param.InflictorHandle);
+
+        _modsharp.PrintToChatAll($"Classname: {weaponEnt?.Classname}");
+
+        if (weaponEnt?.Classname.Contains("weapon", StringComparison.OrdinalIgnoreCase) ?? false)
+        {
+            _modsharp.PrintToChatAll("It's Weapon!");
+        }
     }
 }
