@@ -2,7 +2,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Sharp.Shared;
 using ZombieModSharp.Entities;
-using ZombieModSharp.Interface.Weapons;
+using ZombieModSharp.Interface.Configs;
 
 namespace ZombieModSharp.Core.Weapons;
 
@@ -10,13 +10,15 @@ public class Weapons : IWeapons
 {
     private readonly ISharedSystem _sharedSystem;
     private readonly ILogger<Weapons> _logger;
+    private readonly IModSharp _modsharp;
 
     private Dictionary<string, WeaponData> weaponDatas = [];
 
     public Weapons(ISharedSystem sharedSystem, ILogger<Weapons> logger)
     {
         _sharedSystem = sharedSystem;
-        _logger = logger;
+        _logger = _sharedSystem.GetLoggerFactory().CreateLogger<Weapons>();
+        _modsharp = _sharedSystem.GetModSharp();
     }
 
     public void LoadConfig(string path)
@@ -30,10 +32,17 @@ public class Weapons : IWeapons
             _logger.LogCritical("The weapon datas is null!");
             return;
         }
-        
-        foreach (var kvp in weaponDatas)
+    }
+
+    public float GetWeaponKnockback(string weaponentity)
+    {
+        if (!weaponDatas.TryGetValue(weaponentity, out var weaponData))
         {
-            _logger.LogInformation("Key: {Key}, Data: {Data}", kvp.Key, kvp.Value);
+            _modsharp.PrintToChatAll($"No weapons name {weaponentity}");
+            return 1.0f;
         }
+
+        _modsharp.PrintToChatAll($"Found {weaponData.EntityName} and KB: {weaponData.Knockback}");
+        return weaponData.Knockback;
     }
 }

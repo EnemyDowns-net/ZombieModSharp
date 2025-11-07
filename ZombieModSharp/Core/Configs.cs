@@ -1,11 +1,11 @@
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Sharp.Shared;
-using ZombieModSharp.Interface.Weapons;
+using ZombieModSharp.Interface.Configs;
 
 namespace ZombieModSharp.Core;
 
-public class Configs
+public class Configs : IConfigs
 {
     private readonly ISharedSystem _sharedSystem;
     private readonly ILogger<Configs> _logger;
@@ -21,7 +21,7 @@ public class Configs
     public void PostInit()
     {
         var gamePath = _sharedSystem.GetModSharp().GetGamePath();
-        var configPath = Path.Combine(gamePath, "sharp", "configs", "zombiemodsharp");
+        var configPath = Path.Combine(gamePath, "../sharp", "configs", "zombiemodsharp");
 
         if (!Directory.Exists(configPath))
         {
