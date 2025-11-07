@@ -290,16 +290,21 @@ public class Infect : IInfect
             }
         }), 15.0f, GameTimerFlags.StopOnRoundEnd | GameTimerFlags.StopOnMapEnd);
 
+        _modSharp.PrintChannelAll(HudPrintChannel.Center, $"First infection start in {timerCount} seconds");
+
         var countdown = _modSharp.PushTimer(new Func<TimerAction>(() =>
         {
             try
             {
+                timerCount--;
                 _modSharp.PrintChannelAll(HudPrintChannel.Center, $"First infection start in {timerCount} seconds");
 
                 if (timerCount <= 0)
                     return TimerAction.Stop;
 
-                timerCount--;
+                if (IsInfectStarted())
+                    return TimerAction.Stop;
+
                 return TimerAction.Continue;
             }
             catch (Exception e)
