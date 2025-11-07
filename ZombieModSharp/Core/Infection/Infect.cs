@@ -79,7 +79,7 @@ public class Infect : IInfect
             _logger.LogError("Error: {ex}", ex);
         }
 
-        pawn.SetModel("characters/models/tm_phoenix/tm_phoenix.vmdl");
+        pawn.SetModel("characters/models/s2ze/zombie_frozen/zombie_frozen.vmdl");
 
         // forcing drop all weapon.
         var weapons = pawn.GetWeaponService()?.GetMyWeapons();
@@ -170,7 +170,7 @@ public class Infect : IInfect
 
         pawn.Health = 100;
         pawn.ArmorValue = 100;
-        pawn.SetModel("characters/models/ctm_sas/ctm_sas.vmdl");
+        pawn.SetModel("characters/models/oylsister/uma_musume/gold_ship/goldship2.vmdl");
     }
 
     public void OnRoundPreStart()
