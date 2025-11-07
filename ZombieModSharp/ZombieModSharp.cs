@@ -12,6 +12,7 @@ using ZombieModSharp.Core;
 using ZombieModSharp.Core.Infection;
 using ZombieModSharp.Core.Player;
 using ZombieModSharp.Interface.Command;
+using ZombieModSharp.Interface.Configs;
 using ZombieModSharp.Interface.Events;
 using ZombieModSharp.Interface.Hooks;
 using ZombieModSharp.Interface.Infection;
@@ -40,6 +41,8 @@ public sealed class ZombieModSharp : IModSharpModule
     private readonly ICommand _command;
     private readonly IHooks _hooks;
     private readonly IKnockback _knockback;
+    private readonly IWeapons _weapons;
+    private readonly IConfigs _configs;
 
     // outside module
 
@@ -86,6 +89,8 @@ public sealed class ZombieModSharp : IModSharpModule
         _command = _serviceProvider.GetRequiredService<ICommand>();
         _hooks = _serviceProvider.GetRequiredService<IHooks>();
         _knockback = _serviceProvider.GetRequiredService<IKnockback>();
+        _weapons = _serviceProvider.GetRequiredService<IWeapons>();
+        _configs = _serviceProvider.GetRequiredService<IConfigs>();
     }
 
     public bool Init()
@@ -114,6 +119,7 @@ public sealed class ZombieModSharp : IModSharpModule
         _eventListener.RegisterEvents();
         _hooks.PostInit();
         _command.PostInit();
+        _configs.PostInit();
     }
 
     public void OnAllModulesLoaded()

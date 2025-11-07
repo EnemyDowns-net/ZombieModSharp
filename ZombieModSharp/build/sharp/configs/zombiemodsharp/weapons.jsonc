@@ -1,0 +1,10 @@
+{
+    "m4a1": {
+        "EntityName": "weapon_m4a1",
+        "Knockback": 1.1
+    },
+    "glock": {
+        "EntityName": "weapon_glock",
+        "Knockback": 1.2
+    }
+}

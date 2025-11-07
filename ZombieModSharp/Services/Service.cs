@@ -3,7 +3,9 @@ using ZombieModSharp.Core;
 using ZombieModSharp.Core.Infection;
 using ZombieModSharp.Core.Player;
 using ZombieModSharp.Core.PlayerClasses;
+using ZombieModSharp.Core.Weapons;
 using ZombieModSharp.Interface.Command;
+using ZombieModSharp.Interface.Configs;
 using ZombieModSharp.Interface.Events;
 using ZombieModSharp.Interface.Hooks;
 using ZombieModSharp.Interface.Infection;
@@ -25,7 +27,9 @@ public static class ServiceCollectionExtensions
             .AddSingleton<IZTele, ZTele>()
             .AddSingleton<ICommand, Command>()
             .AddSingleton<IHooks, Hooks>()
-            .AddSingleton<IKnockback, Knockback>();
+            .AddSingleton<IKnockback, Knockback>()
+            .AddSingleton<IWeapons, Weapons>()
+            .AddSingleton<IConfigs, Configs>();
         return services;
     }
 }

@@ -3,6 +3,7 @@ using Sharp.Shared;
 using Sharp.Shared.Managers;
 using Sharp.Shared.Objects;
 using Sharp.Shared.Types;
+using ZombieModSharp.Interface.Configs;
 using ZombieModSharp.Interface.Player;
 using ZombieModSharp.Interface.PlayerClasses;
 
@@ -13,12 +14,14 @@ public class Knockback : IKnockback
     private readonly ISharedSystem _sharedSystem;
     private readonly ILogger<Knockback> _logger;
     private readonly IPlayer _player;
+    private readonly IWeapons _weapons;
 
-    public Knockback(ISharedSystem sharedSystem, ILogger<Knockback> logger, IPlayer player)
+    public Knockback(ISharedSystem sharedSystem, ILogger<Knockback> logger, IPlayer player, IWeapons weapons)
     {
         _sharedSystem = sharedSystem;
         _logger = logger;
         _player = player;
+        _weapons = weapons;
     }
 
     public void KnockbackClient(IGameClient client, IGameClient attacker, string weapon, float damage, int hitGroup)
@@ -45,7 +48,7 @@ public class Knockback : IKnockback
         var foward = attackerEye.AnglesToVectorForward();
 
         var classKnockback = 4.0f;
-        var weaponknockback = 1.0f;
+        var weaponknockback = _weapons.GetWeaponKnockback(weapon);
         var hitgroupsKnockback = 1.0f;
 
         var pushVelocity = foward * damage * classKnockback * weaponknockback * hitgroupsKnockback;
