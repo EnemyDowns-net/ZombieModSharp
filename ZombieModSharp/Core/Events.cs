@@ -101,11 +101,8 @@ public class Events : IEvents, IEventListener
 
     private void OnPlayerHurt(IGameEvent e)
     {
-        var userId = new UserID((ushort)e.GetInt("userid"));
-        var client = _clientManager.GetGameClient(userId);
-
-        var attackerId = new UserID((ushort)e.GetInt("attacker"));
-        var attackerClient = _clientManager.GetGameClient(attackerId);
+        var client = e.GetPlayerController("userid")?.GetGameClient();
+        var attackerClient = e.GetPlayerController("attacker")?.GetGameClient();
         var weapon = e.GetString("weapon");
 
         if (client == null || attackerClient == null)
@@ -184,9 +181,8 @@ public class Events : IEvents, IEventListener
 
     private void OnPlayerSpawn(IGameEvent e)
     {
-        var userId = new UserID((ushort)e.GetInt("userid"));
-        var client = _clientManager.GetGameClient(userId);
         var pawn = e.GetPlayerController("userid");
+        var client = pawn?.GetGameClient();
 
         // _modSharp.PrintChannelAll(HudPrintChannel.Chat, $"Client {client?.Name ?? "Unknown Player"} Spawned");
         // _logger.LogInformation("PlayerSpawn: {Name}", client?.Name ?? "Unknown Player");
