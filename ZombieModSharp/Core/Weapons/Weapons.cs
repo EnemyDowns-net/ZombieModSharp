@@ -24,9 +24,8 @@ public class Weapons : IWeapons
     public void LoadConfig(string path)
     {
         var configPath = Path.Combine(path, "weapons.jsonc");
-        var weaponDatas = JsonSerializer.Deserialize<Dictionary<string, WeaponData>>(File.ReadAllText(configPath));
-
-
+        weaponDatas = JsonSerializer.Deserialize<Dictionary<string, WeaponData>>(File.ReadAllText(configPath)) ?? [];
+        
         if (weaponDatas == null)
         {
             _logger.LogCritical("The weapon datas is null!");
