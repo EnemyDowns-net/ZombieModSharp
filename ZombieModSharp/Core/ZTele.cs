@@ -9,21 +9,19 @@ namespace ZombieModSharp.Core;
 public class ZTele : IZTele
 {
     private readonly IPlayer _player;
-    private readonly IEntityManager _entityManager;
     private readonly ILogger<ZTele> _logger;
 
-    public ZTele(IPlayer player, ILogger<ZTele> logger, IEntityManager entityManager)
+    public ZTele(IPlayer player, ILogger<ZTele> logger)
     {
         _logger = logger;
         _player = player;
-        _entityManager = entityManager;
     }
 
     public void OnPlayerSpawn(IGameClient client)
     {
         var player = _player.GetPlayer(client);
 
-        var clientEnt = _entityManager.FindPlayerControllerBySlot(client.Slot);
+        var clientEnt = client.GetPlayerController();
 
         if (clientEnt == null)
             return;
@@ -39,7 +37,7 @@ public class ZTele : IZTele
     {
         var player = _player.GetPlayer(client);
 
-        var clientEnt = _entityManager.FindPlayerControllerBySlot(client.Slot);
+        var clientEnt = client.GetPlayerController();
 
         if (clientEnt == null)
             return;

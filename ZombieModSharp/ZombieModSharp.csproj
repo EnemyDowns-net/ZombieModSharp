@@ -7,10 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ModSharp.Sharp.Generator.Sdk" Version="2.0.44">
+    <PackageReference Include="ModSharp.Sharp.Generator.Sdk" Version="2.0.69">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="ModSharp.Sharp.Shared" Version="2.0.44" />
+    <PackageReference Include="ModSharp.Sharp.Shared" Version="2.0.69" />
   </ItemGroup>
 </Project>

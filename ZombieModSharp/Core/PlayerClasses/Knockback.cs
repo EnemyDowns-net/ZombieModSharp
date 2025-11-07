@@ -13,14 +13,12 @@ public class Knockback : IKnockback
     private readonly ISharedSystem _sharedSystem;
     private readonly ILogger<Knockback> _logger;
     private readonly IPlayer _player;
-    private readonly IEntityManager _entityManager;
 
     public Knockback(ISharedSystem sharedSystem, ILogger<Knockback> logger, IPlayer player)
     {
         _sharedSystem = sharedSystem;
         _logger = logger;
         _player = player;
-        _entityManager = _sharedSystem.GetEntityManager();
     }
 
     public void KnockbackClient(IGameClient client, IGameClient attacker, string weapon, float damage, int hitGroup)
@@ -35,7 +33,7 @@ public class Knockback : IKnockback
         if (!_player.IsClientHuman(attacker) || !_player.IsClientInfected(client))
             return;
 
-        var attackerPawn = _entityManager.FindPlayerControllerBySlot(attacker.Slot)?.GetPlayerPawn();
+        var attackerPawn = attacker.GetPlayerController()?.GetPlayerPawn();
 
         if (attackerPawn == null)
         {
@@ -52,7 +50,7 @@ public class Knockback : IKnockback
 
         var pushVelocity = foward * damage * classKnockback * weaponknockback * hitgroupsKnockback;
 
-        var playerPawn = _entityManager.FindPlayerControllerBySlot(client.Slot)?.GetPlayerPawn();
+        var playerPawn = client.GetPlayerController()?.GetPlayerPawn();
 
         if (playerPawn == null)
             return;
