@@ -3,24 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Sharp.Shared;
-using Sharp.Shared.Definition;
-using Sharp.Shared.Enums;
-using Sharp.Shared.Listeners;
-using Sharp.Shared.Objects;
-using Sharp.Shared.Types;
-using ZombieModSharp.Core;
-using ZombieModSharp.Core.Infection;
-using ZombieModSharp.Core.Player;
-using ZombieModSharp.Interface.Command;
-using ZombieModSharp.Interface.Configs;
-using ZombieModSharp.Interface.Events;
-using ZombieModSharp.Interface.Hooks;
-using ZombieModSharp.Interface.Infection;
-using ZombieModSharp.Interface.Listeners;
-using ZombieModSharp.Interface.Player;
-using ZombieModSharp.Interface.PlayerClasses;
-using ZombieModSharp.Interface.ZTele;
-using ZombieModSharp.Services;
+using ZombieModSharp.Abstractions;
+using ZombieModSharp.Core.Services;
 
 namespace ZombieModSharp;
 
@@ -34,7 +18,7 @@ public sealed class ZombieModSharp : IModSharpModule
     private readonly ServiceProvider  _serviceProvider;
     private readonly ISharedSystem _sharedSystem;
     private readonly IEvents _eventListener;
-    private readonly IPlayer _player;
+    private readonly IPlayerManager _player;
     private readonly IInfect _infect;
     private readonly IListeners _listeners;
     private readonly IZTele _ztele;
@@ -81,7 +65,7 @@ public sealed class ZombieModSharp : IModSharpModule
         _serviceProvider = services.BuildServiceProvider();
 
         // Get services from DI container instead of manual instantiation
-        _player = _serviceProvider.GetRequiredService<IPlayer>();
+        _player = _serviceProvider.GetRequiredService<IPlayerManager>();
         _infect = _serviceProvider.GetRequiredService<IInfect>();
         _ztele = _serviceProvider.GetRequiredService<IZTele>();
         _eventListener = _serviceProvider.GetRequiredService<IEvents>();
@@ -110,12 +94,12 @@ public sealed class ZombieModSharp : IModSharpModule
 
     public void Shutdown()
     {
-        _logger.LogInformation("See you around, Nameless~ Try to stay out of trouble, especially... the next time we meet!");
+        // _logger.LogInformation("See you around, Nameless~ Try to stay out of trouble, especially... the next time we meet!");
     }
 
     public void PostInit()
     {
-        _logger.LogInformation("Why don't you stay and play for a while?");
+        // _logger.LogInformation("Why don't you stay and play for a while?");
         _eventListener.RegisterEvents();
         _hooks.PostInit();
         _command.PostInit();
@@ -129,25 +113,11 @@ public sealed class ZombieModSharp : IModSharpModule
 
     public void OnLibraryConnected(string name)
     {
-        _logger.LogInformation("The~ Game~ Is~ On~");
+        //_logger.LogInformation("The~ Game~ Is~ On~");
     }
 
     public void OnLibraryDisconnect(string name)
     {
         
     }
-
-    /*
-    private bool HasPermission(IGameClient client)
-    {
-        if (_permission is null) return false;
-
-        var steamId = client.SteamId.ToString();
-        var identity = _permission.GetIdentity(steamId);
-
-        return identity.Equals("Admin", StringComparison.OrdinalIgnoreCase)
-                || identity.Equals("Manager", StringComparison.OrdinalIgnoreCase)
-                || identity.Equals("Owner", StringComparison.OrdinalIgnoreCase);
-    }
-    */
 }
