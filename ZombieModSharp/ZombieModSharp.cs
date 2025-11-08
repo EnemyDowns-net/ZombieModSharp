@@ -18,14 +18,9 @@ public sealed class ZombieModSharp : IModSharpModule
     private readonly ServiceProvider  _serviceProvider;
     private readonly ISharedSystem _sharedSystem;
     private readonly IEvents _eventListener;
-    private readonly IPlayerManager _player;
-    private readonly IInfect _infect;
     private readonly IListeners _listeners;
-    private readonly IZTele _ztele;
     private readonly ICommand _command;
     private readonly IHooks _hooks;
-    private readonly IKnockback _knockback;
-    private readonly IWeapons _weapons;
     private readonly IConfigs _configs;
 
     // outside module
@@ -65,15 +60,10 @@ public sealed class ZombieModSharp : IModSharpModule
         _serviceProvider = services.BuildServiceProvider();
 
         // Get services from DI container instead of manual instantiation
-        _player = _serviceProvider.GetRequiredService<IPlayerManager>();
-        _infect = _serviceProvider.GetRequiredService<IInfect>();
-        _ztele = _serviceProvider.GetRequiredService<IZTele>();
         _eventListener = _serviceProvider.GetRequiredService<IEvents>();
         _listeners = _serviceProvider.GetRequiredService<IListeners>();
         _command = _serviceProvider.GetRequiredService<ICommand>();
         _hooks = _serviceProvider.GetRequiredService<IHooks>();
-        _knockback = _serviceProvider.GetRequiredService<IKnockback>();
-        _weapons = _serviceProvider.GetRequiredService<IWeapons>();
         _configs = _serviceProvider.GetRequiredService<IConfigs>();
     }
 

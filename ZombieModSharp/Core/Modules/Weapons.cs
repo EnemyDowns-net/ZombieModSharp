@@ -29,12 +29,33 @@ public class Weapons : IWeapons
     public void LoadConfig(string path)
     {
         var configPath = Path.Combine(path, "weapons.jsonc");
-        weaponDatas = JsonSerializer.Deserialize<Dictionary<string, WeaponData>>(File.ReadAllText(configPath)) ?? [];
 
-        if (weaponDatas == null)
+        if (!File.Exists(configPath))
         {
-            _logger.LogCritical("The weapon datas is null!");
+            _logger.LogCritical("File is not found!");
             return;
+        }
+
+        try
+        {
+            var jsonContent = File.ReadAllText(configPath);
+            
+            // Simple comment removal (basic implementation)
+            var lines = jsonContent.Split('\n');
+            var cleanedLines = lines.Select(line => 
+            {
+                var commentIndex = line.IndexOf("//");
+                return commentIndex >= 0 ? line.Substring(0, commentIndex) : line;
+            });
+            var cleanedJson = string.Join('\n', cleanedLines);
+
+            weaponDatas = JsonSerializer.Deserialize<Dictionary<string, WeaponData>>(cleanedJson) ?? [];
+
+            _logger.LogInformation("Successfully loaded {count} weapon configurations", weaponDatas.Count);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to parse weapons configuration");
         }
     }
 
