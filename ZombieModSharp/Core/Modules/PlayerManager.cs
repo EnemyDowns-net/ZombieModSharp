@@ -45,6 +45,11 @@ public class PlayerManager : IPlayerManager
     {
         return !_players[client].IsZombie;
     }
+
+    public void GetPlayerClassesData(IGameClient client)
+    {
+        var player = GetPlayer(client);
+    }
 }
 
 // Enhanced ZMPlayer class with all the merged functionality
@@ -54,6 +59,7 @@ public class Player
     {
         IsZombie = false;
         MotherZombieStatus = MotherZombieStatus.None;
+
     }
 
     // Core zombie state
@@ -64,28 +70,12 @@ public class Player
     public Vector? SpawnPoint { get; set; } = null;
     public Vector? SpawnRotation { get; set; } = null;
 
+    // player classes
+    public ClassAttribute? HumanClass { get; set; }
+    public ClassAttribute? ZombieClass { get; set; }
+    public ClassAttribute? ActiveClass { get; set; }
+
     // Convenience methods
     public bool IsHuman() => !IsZombie;
     public bool IsInfected() => IsZombie;
-    
-    // Additional player-related methods that could be added
-    public void Reset()
-    {
-        IsZombie = false;
-        MotherZombieStatus = MotherZombieStatus.None;
-        SpawnPoint = null;
-        SpawnRotation = null;
-    }
-    
-    public void SetAsMotherZombie()
-    {
-        IsZombie = true;
-        MotherZombieStatus = MotherZombieStatus.Chosen;
-    }
-    
-    public void SetSpawnLocation(Vector position, Vector rotation)
-    {
-        SpawnPoint = position;
-        SpawnRotation = rotation;
-    }
 }
