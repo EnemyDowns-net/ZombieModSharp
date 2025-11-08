@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using Sharp.Shared;
 using Sharp.Shared.Objects;
 using ZombieModSharp.Abstractions;
 
@@ -6,20 +7,24 @@ namespace ZombieModSharp.Core.Modules;
 
 public class ZTele : IZTele
 {
+    private readonly ISharedSystem _sharedSystem;
     private readonly IPlayerManager _player;
     private readonly ILogger<ZTele> _logger;
+    private readonly IModSharp _modsharp;
 
-    public ZTele(IPlayerManager player, ILogger<ZTele> logger)
+    public ZTele(ISharedSystem sharedSystem, IPlayerManager player)
     {
-        _logger = logger;
+        _sharedSystem = sharedSystem;
         _player = player;
+        _logger = _sharedSystem.GetLoggerFactory().CreateLogger<ZTele>();
+        _modsharp = _sharedSystem.GetModSharp();
     }
 
     public void OnPlayerSpawn(IGameClient client)
     {
         var player = _player.GetPlayer(client);
 
-        var clientEnt = client.GetPlayerController();
+        var clientEnt = client.GetPlayerController()?.GetPlayerPawn();
 
         if (clientEnt == null)
             return;
@@ -35,7 +40,7 @@ public class ZTele : IZTele
     {
         var player = _player.GetPlayer(client);
 
-        var clientEnt = client.GetPlayerController();
+        var clientEnt = client.GetPlayerController()?.GetPlayerPawn();
 
         if (clientEnt == null)
             return;
@@ -43,6 +48,6 @@ public class ZTele : IZTele
         if (!clientEnt.IsAlive)
             return;
 
-        clientEnt.Teleport(player.SpawnPoint, player.SpawnRotation);
+        clientEnt.Teleport(player.SpawnPoint, player.SpawnRotation, null);
     }
 }
