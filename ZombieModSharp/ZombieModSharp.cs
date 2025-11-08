@@ -103,7 +103,7 @@ public sealed class ZombieModSharp : IModSharpModule
 
     public void OnLibraryConnected(string name)
     {
-        //_logger.LogInformation("The~ Game~ Is~ On~");
+
     }
 
     public void OnLibraryDisconnect(string name)
