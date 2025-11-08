@@ -268,8 +268,6 @@ public class Infect : IInfect
     {
         int timerCount = 15;
 
-        _modSharp.PrintToChatAll("Infection should start here!");
-
         var timer = _modSharp.PushTimer(new Func<TimerAction>(() =>
         {
             try
@@ -286,14 +284,14 @@ public class Infect : IInfect
             }
         }), 15.0f, GameTimerFlags.StopOnRoundEnd | GameTimerFlags.StopOnMapEnd);
 
-        _modSharp.PrintChannelAll(HudPrintChannel.Center, $"First infection start in {timerCount} seconds");
+        _modSharp.PrintChannelAll(HudPrintChannel.Hint, $"First infection start in {timerCount} seconds");
 
         var countdown = _modSharp.PushTimer(new Func<TimerAction>(() =>
         {
             try
             {
                 timerCount--;
-                _modSharp.PrintChannelAll(HudPrintChannel.Center, $"First infection start in {timerCount} seconds");
+                _modSharp.PrintChannelAll(HudPrintChannel.Hint, $"First infection start in {timerCount} seconds");
 
                 if (timerCount <= 0)
                     return TimerAction.Stop;
