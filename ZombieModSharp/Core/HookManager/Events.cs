@@ -191,17 +191,16 @@ public class Events : IEvents, IEventListener
         if (team == CStrikeTeam.UnAssigned || team == CStrikeTeam.Spectator)
             return;
 
-        if (_infect.IsInfectStarted())
-        {
             // infect or
-            var timer = _modSharp.PushTimer(() => { _infect.InfectPlayer(client); }, 0.05, GameTimerFlags.None | GameTimerFlags.StopOnMapEnd | GameTimerFlags.StopOnRoundEnd);
-        }
-
-        else
+        _modSharp.PushTimer(() =>
         {
-            var timer = _modSharp.PushTimer(() => { _infect.HumanizeClient(client); }, 0.05, GameTimerFlags.None | GameTimerFlags.StopOnMapEnd | GameTimerFlags.StopOnRoundEnd);
-        }
+            if (_infect.IsInfectStarted())
+                _infect.InfectPlayer(client);
 
-        _ztele.OnPlayerSpawn(client);
+            else
+                _infect.HumanizeClient(client);
+
+            _ztele.OnPlayerSpawn(client);
+        }, 0.05, GameTimerFlags.None | GameTimerFlags.StopOnMapEnd | GameTimerFlags.StopOnRoundEnd);
     }
 }
