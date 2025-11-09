@@ -4,7 +4,9 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Sharp.Shared;
 using ZombieModSharp.Abstractions;
+using ZombieModSharp.Abstractions.Storage;
 using ZombieModSharp.Core.Services;
+using ZombieModSharp.Storage;
 
 namespace ZombieModSharp;
 
@@ -22,6 +24,8 @@ public sealed class ZombieModSharp : IModSharpModule
     private readonly ICommand _command;
     private readonly IHooks _hooks;
     private readonly IConfigs _configs;
+    private readonly IConfiguration _configuration;
+    private readonly ISqliteDatabase _sqliteDatabase;
 
     // outside module
 
@@ -29,16 +33,18 @@ public sealed class ZombieModSharp : IModSharpModule
                       string dllPath,
                       string sharpPath,
                       Version? version,
-                      IConfiguration? coreConfiguration,
+                      IConfiguration configuration,
                       bool hotReload)
     {
         ArgumentNullException.ThrowIfNull(dllPath);
         ArgumentNullException.ThrowIfNull(sharpPath);
         ArgumentNullException.ThrowIfNull(version);
-        ArgumentNullException.ThrowIfNull(coreConfiguration);
+        //ArgumentNullException.ThrowIfNull(coreConfiguration);
+
+        _configuration = configuration;
 
         _sharedSystem = sharedSystem ?? throw new ArgumentNullException(nameof(sharedSystem));
-        //var configuration = new ConfigurationBuilder().AddJsonFile(Path.Combine(dllPath, "appsettings.json"), false, false).Build();
+        // var configuration = new ConfigurationBuilder().AddJsonFile(Path.Combine(dllPath, "appsettings.json"), false, false).Build();
 
         var services = new ServiceCollection();
 
@@ -51,6 +57,10 @@ public sealed class ZombieModSharp : IModSharpModule
         services.AddSingleton(_sharedSystem.GetEventManager());
         services.AddSingleton(_sharedSystem.GetModSharp());
         services.AddSingleton(_sharedSystem.GetClientManager());
+        services.AddSingleton<IConfiguration>(configuration);
+        services.AddSingleton<ISqliteDatabase, SqliteDatabase>();
+
+        _sqliteDatabase = new SqliteDatabase("Data Source=ZombieModSharp.db;");
         
         // Register our services using the extension method
         services.AddZombieModSharpServices();
