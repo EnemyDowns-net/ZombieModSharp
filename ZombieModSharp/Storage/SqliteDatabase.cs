@@ -1,6 +1,7 @@
 
 using Dapper;
 using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.Logging;
 using ZombieModSharp.Abstractions.Entities;
 using ZombieModSharp.Abstractions.Storage;
 using ZombieModSharp.Core.Modules;
@@ -11,15 +12,19 @@ public class SqliteDatabase : ISqliteDatabase
 {
     // Class implementation goes here
     private readonly SqliteConnection _connection;
+    private readonly ILogger<SqliteDatabase> _logger;
 
-    public SqliteDatabase(string connectionString)
+    public SqliteDatabase(string connectionString, ILogger<SqliteDatabase> logger)
     {
+        _logger = logger;
         _connection = new SqliteConnection(connectionString);
         _connection.Open();
     }
 
     public async Task Init()
     {
+        _logger.LogInformation("Initialized database.");
+        
         // table for player classes
         await _connection.ExecuteAsync(@"
             CREATE TABLE IF NOT EXISTS zs_playerclasses (

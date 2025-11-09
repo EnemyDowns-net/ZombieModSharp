@@ -58,9 +58,11 @@ public sealed class ZombieModSharp : IModSharpModule
         services.AddSingleton(_sharedSystem.GetModSharp());
         services.AddSingleton(_sharedSystem.GetClientManager());
         services.AddSingleton<IConfiguration>(configuration);
-        services.AddSingleton<ISqliteDatabase, SqliteDatabase>();
 
-        _sqliteDatabase = new SqliteDatabase("Data Source=ZombieModSharp.db;");
+        // Register SqliteDatabase with proper factory
+        var path = Path.Combine(sharpPath, "data", "ZombieModSharp.db");
+        services.AddSingleton<ISqliteDatabase>(provider => 
+            new SqliteDatabase($"Data Source={path}", provider.GetRequiredService<ILogger<SqliteDatabase>>()));
         
         // Register our services using the extension method
         services.AddZombieModSharpServices();
@@ -70,6 +72,7 @@ public sealed class ZombieModSharp : IModSharpModule
         _serviceProvider = services.BuildServiceProvider();
 
         // Get services from DI container instead of manual instantiation
+        _sqliteDatabase = _serviceProvider.GetRequiredService<ISqliteDatabase>();
         _eventListener = _serviceProvider.GetRequiredService<IEvents>();
         _listeners = _serviceProvider.GetRequiredService<IListeners>();
         _command = _serviceProvider.GetRequiredService<ICommand>();
@@ -88,8 +91,9 @@ public sealed class ZombieModSharp : IModSharpModule
         var _gamedata = _sharedSystem.GetModSharp().GetGameData();
         _gamedata.Register("ZombieModSharp.jsonc");
 
-        return true;
+        _sqliteDatabase.Init();
 
+        return true;
     }
 
     public void Shutdown()

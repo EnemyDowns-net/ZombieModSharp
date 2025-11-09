@@ -4,6 +4,7 @@ using Sharp.Shared.Enums;
 using Sharp.Shared.Listeners;
 using Sharp.Shared.Objects;
 using ZombieModSharp.Abstractions;
+using ZombieModSharp.Abstractions.Storage;
 
 namespace ZombieModSharp.Core.HookManager;
 
@@ -16,13 +17,15 @@ public class Listeners : IListeners, IClientListener, IGameListener
     private readonly ISharedSystem _sharedSystem;
     private readonly ILogger<Listeners> _logger;
     private readonly IModSharp _modsharp;
+    private readonly ISqliteDatabase _sqlite;
 
-    public Listeners(IPlayerManager player, ISharedSystem sharedSystem)
+    public Listeners(IPlayerManager player, ISharedSystem sharedSystem, ISqliteDatabase sqlite)
     {
         _player = player;
         _sharedSystem = sharedSystem;
         _logger = _sharedSystem.GetLoggerFactory().CreateLogger<Listeners>();
         _modsharp = _sharedSystem.GetModSharp();
+        _sqlite = sqlite;
     }
 
     public void Init()
@@ -34,6 +37,21 @@ public class Listeners : IListeners, IClientListener, IGameListener
     public void OnClientPutInServer(IGameClient client)
     {
         //_logger.LogInformation("ClientPutInServer: {Name}", client.Name);
+
+        var id = client.SteamId.ToString();
+
+        Task.Run(async () => {
+            var classes = await _sqlite.GetPlayerClassesAsync(id);
+
+            if (classes == null)
+            {
+                _logger.LogInformation("Found nothing.");
+                await _sqlite.InsertPlayerClassesAsync(id, "human_default", "zombie_default");
+            }
+            else
+                _logger.LogInformation("Found {human} | {zombie}", classes.HumanClass, classes.ZombieClass);
+        });
+
         _player.GetPlayer(client);
     }
 
