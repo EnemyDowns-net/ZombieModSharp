@@ -22,7 +22,7 @@ public class ZTele : IZTele
 
     public void OnPlayerSpawn(IGameClient client)
     {
-        var player = _player.GetPlayer(client);
+        var player = _player.GetOrCreatePlayer(client);
 
         var clientEnt = client.GetPlayerController()?.GetPlayerPawn();
 
@@ -38,7 +38,7 @@ public class ZTele : IZTele
 
     public void TeleportToSpawn(IGameClient client)
     {
-        var player = _player.GetPlayer(client);
+        var player = _player.GetOrCreatePlayer(client);
 
         var clientEnt = client.GetPlayerController()?.GetPlayerPawn();
 

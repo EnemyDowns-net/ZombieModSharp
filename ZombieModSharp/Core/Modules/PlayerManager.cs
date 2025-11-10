@@ -14,7 +14,7 @@ public class PlayerManager : IPlayerManager
         _players = new Dictionary<IGameClient, Player>();
     }
 
-    public Player GetPlayer(IGameClient client)
+    public Player GetOrCreatePlayer(IGameClient client)
     {
         if (_players.ContainsKey(client))
         {
@@ -48,7 +48,7 @@ public class PlayerManager : IPlayerManager
 
     public void GetPlayerClassesData(IGameClient client)
     {
-        var player = GetPlayer(client);
+        var player = GetOrCreatePlayer(client);
     }
 }
 
