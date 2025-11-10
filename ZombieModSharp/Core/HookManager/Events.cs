@@ -109,8 +109,8 @@ public class Events : IEvents, IEventListener
             return;
         }
 
-        var zmClient = _player.GetPlayer(client);
-        var zmAttacker = _player.GetPlayer(attackerClient);
+        var zmClient = _player.GetOrCreatePlayer(client);
+        var zmAttacker = _player.GetOrCreatePlayer(attackerClient);
 
         if (zmClient.IsHuman() && zmAttacker.IsInfected())
         {

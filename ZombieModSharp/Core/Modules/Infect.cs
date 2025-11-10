@@ -42,7 +42,7 @@ public class Infect : IInfect
             InfectStarted = true;
         }
 
-        var zmPlayer = _player.GetPlayer(client);
+        var zmPlayer = _player.GetOrCreatePlayer(client);
         zmPlayer.IsZombie = true;
 
         var clientController = client.GetPlayerController();
@@ -142,7 +142,7 @@ public class Infect : IInfect
             return;
         }
 
-        var zmPlayer = _player.GetPlayer(client);
+        var zmPlayer = _player.GetOrCreatePlayer(client);
         zmPlayer.IsZombie = false;
 
         var clientController = client.GetPlayerController();

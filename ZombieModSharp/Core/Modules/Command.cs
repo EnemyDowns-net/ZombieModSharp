@@ -35,7 +35,7 @@ public class Command : ICommand
 
     private ECommandAction ZTeleCommand(IGameClient client, StringCommand command)
     {
-        var playerInfo = _player.GetPlayer(client);
+        var playerInfo = _player.GetOrCreatePlayer(client);
 
         if (client == null || playerInfo == null)
             return ECommandAction.Handled;

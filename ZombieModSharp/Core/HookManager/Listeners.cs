@@ -13,15 +13,15 @@ public class Listeners : IListeners, IClientListener, IGameListener
     public int ListenerVersion => IClientListener.ApiVersion;
     public int ListenerPriority => 0;
 
-    private readonly IPlayerManager _player;
+    private readonly IPlayerManager _playerManager;
     private readonly ISharedSystem _sharedSystem;
     private readonly ILogger<Listeners> _logger;
     private readonly IModSharp _modsharp;
     private readonly ISqliteDatabase _sqlite;
 
-    public Listeners(IPlayerManager player, ISharedSystem sharedSystem, ISqliteDatabase sqlite)
+    public Listeners(IPlayerManager playerManager, ISharedSystem sharedSystem, ISqliteDatabase sqlite)
     {
-        _player = player;
+        _playerManager = playerManager;
         _sharedSystem = sharedSystem;
         _logger = _sharedSystem.GetLoggerFactory().CreateLogger<Listeners>();
         _modsharp = _sharedSystem.GetModSharp();
@@ -40,7 +40,7 @@ public class Listeners : IListeners, IClientListener, IGameListener
 
         var id = client.SteamId.ToString();
 
-        Task.Run(async () => {
+        _modsharp.InvokeFrameActionAsync(async () => {
             var classes = await _sqlite.GetPlayerClassesAsync(id);
 
             if (classes == null)
@@ -52,13 +52,13 @@ public class Listeners : IListeners, IClientListener, IGameListener
                 _logger.LogInformation("Found {human} | {zombie}", classes.HumanClass, classes.ZombieClass);
         });
 
-        _player.GetPlayer(client);
+        var player = _playerManager.GetOrCreatePlayer(client);
     }
 
     public void OnClientDisconnecting(IGameClient client, NetworkDisconnectionReason reason)
     {
         //_logger.LogInformation("ClientDisconnect: {Name}", client.Name);
-        _player.RemovePlayer(client);
+        _playerManager.RemovePlayer(client);
     }
 
     public void OnResourcePrecache()

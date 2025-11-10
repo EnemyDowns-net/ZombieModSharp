@@ -95,7 +95,7 @@ public class PlayerClasses : IPlayerClasses
             return;
         }
 
-        var client = _playerManager.GetPlayer(gameClient);
+        var client = _playerManager.GetOrCreatePlayer(gameClient);
         client.ActiveClass = classAttribute;
     }
 }

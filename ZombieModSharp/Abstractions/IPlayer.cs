@@ -5,7 +5,7 @@ namespace ZombieModSharp.Abstractions;
 
 public interface IPlayerManager
 {
-    public Player GetPlayer(IGameClient client);
+    public Player GetOrCreatePlayer(IGameClient client);
     public Dictionary<IGameClient, Player> GetAllPlayers();
     public void RemovePlayer(IGameClient client);
     public bool IsClientInfected(IGameClient client);
