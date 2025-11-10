@@ -19,7 +19,8 @@ public static class ServiceCollectionExtensions
             .AddSingleton<IKnockback, Knockback>()
             .AddSingleton<IWeapons, Weapons>()
             .AddSingleton<IConfigs, Configs>()
-            .AddSingleton<IHitGroup, HitGroup>();
+            .AddSingleton<IHitGroup, HitGroup>()
+            .AddSingleton<ICvarManager, CvarManager>();
         return services;
     }
 }
