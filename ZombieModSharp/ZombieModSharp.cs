@@ -24,7 +24,6 @@ public sealed class ZombieModSharp : IModSharpModule
     private readonly ICommand _command;
     private readonly IHooks _hooks;
     private readonly IConfigs _configs;
-    private readonly IConfiguration _configuration;
     private readonly ISqliteDatabase _sqliteDatabase;
 
     // outside module
@@ -41,8 +40,6 @@ public sealed class ZombieModSharp : IModSharpModule
         ArgumentNullException.ThrowIfNull(version);
         //ArgumentNullException.ThrowIfNull(coreConfiguration);
 
-        _configuration = configuration;
-
         _sharedSystem = sharedSystem ?? throw new ArgumentNullException(nameof(sharedSystem));
         // var configuration = new ConfigurationBuilder().AddJsonFile(Path.Combine(dllPath, "appsettings.json"), false, false).Build();
 
@@ -57,7 +54,6 @@ public sealed class ZombieModSharp : IModSharpModule
         services.AddSingleton(_sharedSystem.GetEventManager());
         services.AddSingleton(_sharedSystem.GetModSharp());
         services.AddSingleton(_sharedSystem.GetClientManager());
-        services.AddSingleton<IConfiguration>(configuration);
 
         // Register SqliteDatabase with proper factory
         var path = Path.Combine(sharpPath, "data", "ZombieModSharp.db");
@@ -91,7 +87,8 @@ public sealed class ZombieModSharp : IModSharpModule
         var _gamedata = _sharedSystem.GetModSharp().GetGameData();
         _gamedata.Register("ZombieModSharp.jsonc");
 
-        _sqliteDatabase.Init();
+        var modsharp = _sharedSystem.GetModSharp();
+        modsharp.InvokeFrameActionAsync(async () => await _sqliteDatabase.Init());
 
         return true;
     }
