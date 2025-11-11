@@ -63,7 +63,7 @@ public class PlayerClasses : IPlayerClasses
             _logger.LogError(ex, "Failed to parse classes configuration");
         }
     }
-    
+
     public void ApplyPlayerClassAttribute(IPlayerPawn playerPawn, ClassAttribute classAttribute)
     {
         if (!playerPawn.IsAlive)
@@ -72,20 +72,21 @@ public class PlayerClasses : IPlayerClasses
         }
 
         playerPawn.Health = classAttribute.Health;
+        var team = classAttribute.Team;
 
         if (classAttribute.Model != "default" || !string.IsNullOrEmpty(classAttribute.Model))
             playerPawn.SetModel(classAttribute.Model);
 
         else
         {
-            var team = classAttribute.Team;
-
             if (team == 0)
                 playerPawn.SetModel("characters/models/tm_phoenix/tm_phoenix.vmdl");
 
             if (team == 1)
                 playerPawn.SetModel("characters/models/ctm_sas/ctm_sas.vmdl");
         }
+
+        SetClassArmor(playerPawn, team);
 
         var gameClient = playerPawn.GetController()?.GetGameClient();
 
@@ -97,5 +98,36 @@ public class PlayerClasses : IPlayerClasses
 
         var client = _playerManager.GetOrCreatePlayer(gameClient);
         client.ActiveClass = classAttribute;
+    }
+
+    private void SetClassArmor(IPlayerPawn playerPawn, int team)
+    {
+        if (team == 0)
+        {
+            playerPawn.ArmorValue = 0;
+            try
+            {
+                playerPawn.GetItemService()!.HasHelmet = false;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error: {ex}", ex);
+            }
+        }
+        else
+        {
+            playerPawn.ArmorValue = 100;
+        }
+    }
+    
+    public ClassAttribute? GetClassByName(string classname)
+    {
+        if (string.IsNullOrEmpty(classname))
+            return null;
+
+        if (!classesData.TryGetValue(classname, out var targetClass))
+            return null;
+
+        return targetClass;
     }
 }
