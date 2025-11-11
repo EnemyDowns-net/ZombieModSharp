@@ -1,0 +1,18 @@
+{
+    "zombie_default": {
+        "Name": "Zombie Default",
+        "Team": 0,
+        "MotherZombie": false,
+        "Model": "characters/models/s2ze/zombie_frozen/zombie_frozen.vmdl",
+        "Health": 8000,
+        "Speed": 300.0
+    },
+    "human_default": {
+        "Name": "Human Default",
+        "Team": 1,
+        "MotherZombie": false,
+        "Model": "characters/models/oylsister/uma_musume/gold_ship/goldship2.vmdl",
+        "Health": 100,
+        "Speed": 300.0
+    }
+}

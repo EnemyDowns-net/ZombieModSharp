@@ -17,17 +17,19 @@ public class Infect : IInfect
     private readonly ILogger<Infect> _logger;
     private readonly IPlayerManager _player;
     private readonly IModSharp _modSharp;
+    private readonly IPlayerClasses _playerClasses;
 
     private bool InfectStarted = false;
 
-    public Infect(ISharedSystem sharedSystem, ILogger<Infect> logger, IPlayerManager player, IModSharp modSharp)
+    public Infect(ISharedSystem sharedSystem, ILogger<Infect> logger, IPlayerManager player, IPlayerClasses playerClasses)
     {
         _sharedSystem = sharedSystem;
         _entityManager = _sharedSystem.GetEntityManager();
         _eventManager = _sharedSystem.GetEventManager();
         _logger = logger;
         _player = player;
-        _modSharp = modSharp;
+        _modSharp = _sharedSystem.GetModSharp();
+        _playerClasses = playerClasses;
     }
 
     public void InfectPlayer(IGameClient client, IGameClient? attacker = null, bool motherzombie = false, bool force = false)
@@ -64,6 +66,9 @@ public class Infect : IInfect
             return;
         }
 
+        _playerClasses.ApplyPlayerClassAttribute(pawn, zmPlayer.ZombieClass!);
+
+        /*
         pawn.Health = 8000;
         pawn.ArmorValue = 0;
         try
@@ -76,6 +81,7 @@ public class Infect : IInfect
         }
 
         pawn.SetModel("characters/models/s2ze/zombie_frozen/zombie_frozen.vmdl");
+        */
 
         // forcing drop all weapon.
         var weapons = pawn.GetWeaponService()?.GetMyWeapons();
@@ -158,15 +164,19 @@ public class Infect : IInfect
         // implement model changed and health.
         var pawn = clientController.GetPawn();
 
-        if(pawn == null)
+        if (pawn == null)
         {
             _logger.LogError("The client controller is null!");
             return;
         }
 
+        _playerClasses.ApplyPlayerClassAttribute(pawn, zmPlayer.HumanClass!);
+
+        /*
         pawn.Health = 100;
         pawn.ArmorValue = 100;
         pawn.SetModel("characters/models/oylsister/uma_musume/gold_ship/goldship2.vmdl");
+        */
     }
 
     public void OnRoundPreStart()

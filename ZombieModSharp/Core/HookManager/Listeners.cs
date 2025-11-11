@@ -18,14 +18,18 @@ public class Listeners : IListeners, IClientListener, IGameListener
     private readonly ILogger<Listeners> _logger;
     private readonly IModSharp _modsharp;
     private readonly ISqliteDatabase _sqlite;
+    private readonly ICvarManager _cvar;
+    private readonly IPlayerClasses _playerClasses;
 
-    public Listeners(IPlayerManager playerManager, ISharedSystem sharedSystem, ISqliteDatabase sqlite)
+    public Listeners(IPlayerManager playerManager, ISharedSystem sharedSystem, ISqliteDatabase sqlite, ICvarManager cvar, IPlayerClasses playerClasses)
     {
         _playerManager = playerManager;
         _sharedSystem = sharedSystem;
         _logger = _sharedSystem.GetLoggerFactory().CreateLogger<Listeners>();
         _modsharp = _sharedSystem.GetModSharp();
         _sqlite = sqlite;
+        _cvar = cvar;
+        _playerClasses = playerClasses;
     }
 
     public void Init()
@@ -37,8 +41,13 @@ public class Listeners : IListeners, IClientListener, IGameListener
     public void OnClientPutInServer(IGameClient client)
     {
         //_logger.LogInformation("ClientPutInServer: {Name}", client.Name);
+        if (client.IsHltv)
+            return;
 
         var id = client.SteamId.ToString();
+
+        string humanClass = string.Empty;
+        string zombieClass = string.Empty;
 
         _modsharp.InvokeFrameActionAsync(async () => {
             var classes = await _sqlite.GetPlayerClassesAsync(id);
@@ -46,18 +55,33 @@ public class Listeners : IListeners, IClientListener, IGameListener
             if (classes == null)
             {
                 _logger.LogInformation("Found nothing.");
-                await _sqlite.InsertPlayerClassesAsync(id, "human_default", "zombie_default");
+
+                humanClass = _cvar.CvarList["Cvar_HumanDefault"]!.GetString();
+                zombieClass = _cvar.CvarList["Cvar_ZombieDefault"]!.GetString();
+
+                await _sqlite.InsertPlayerClassesAsync(id, humanClass, zombieClass);
             }
             else
-                _logger.LogInformation("Found {human} | {zombie}", classes.HumanClass, classes.ZombieClass);
-        });
+            {
+                humanClass = classes.HumanClass;
+                zombieClass = classes.ZombieClass;
 
-        var player = _playerManager.GetOrCreatePlayer(client);
+                _logger.LogInformation("Found {human} | {zombie}", classes.HumanClass, classes.ZombieClass);
+            }
+
+            var player = _playerManager.GetOrCreatePlayer(client);
+
+            player.HumanClass = _playerClasses.GetClassByName(humanClass);
+            player.ZombieClass = _playerClasses.GetClassByName(zombieClass);
+        });
     }
 
     public void OnClientDisconnecting(IGameClient client, NetworkDisconnectionReason reason)
     {
         //_logger.LogInformation("ClientDisconnect: {Name}", client.Name);
+        if (client.IsHltv)
+            return;
+
         _playerManager.RemovePlayer(client);
     }
 

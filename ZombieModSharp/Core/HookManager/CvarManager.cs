@@ -29,6 +29,6 @@ public class CvarManager : ICvarManager
         CvarList["Cvar_ZombieDefault"] = conVar.CreateConVar("zms_zombie_class_default", "zombie_default", "Default zombie class when player join", ConVarFlags.Release);
 
         // we check if covar existed or not.
-
+        
     }
 }

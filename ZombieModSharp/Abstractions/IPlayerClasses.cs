@@ -7,4 +7,5 @@ public interface IPlayerClasses
 {
     public void LoadConfig(string path);
     public void ApplyPlayerClassAttribute(IPlayerPawn playerPawn, ClassAttribute classAttribute);
+    public ClassAttribute? GetClassByName(string classname);
 }
