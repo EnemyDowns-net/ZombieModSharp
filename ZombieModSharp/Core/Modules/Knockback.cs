@@ -47,7 +47,7 @@ public class Knockback : IKnockback
         var attackerEye = attackerPawn.GetEyeAngles();
         var foward = attackerEye.AnglesToVectorForward();
 
-        var classKnockback = 4.0f;
+        var classKnockback = _player.GetOrCreatePlayer(client).ActiveClass?.Knockback ?? 3.0f;
         var weaponknockback = _weapons.GetWeaponKnockback(weapon);
         var hitgroupsKnockback = _hitgroup.GetHitgroupKnockback(hitGroup);
 
