@@ -1,3 +1,4 @@
 // characters models
 characters/models/oylsister/uma_musume/gold_ship/goldship2.vmdl
 characters/models/s2ze/zombie_frozen/zombie_frozen.vmdl
+soundevents/soundevents_zsharp.vsndevts
