@@ -38,6 +38,8 @@ public class Hooks : IHooks
 
         //var isInfected = _player.IsClientInfected(player);
         //_modsharp.PrintChannelAll(HudPrintChannel.Chat, $"Zombie Status: {isInfected}");
+        // just in case.
+        _player.GetOrCreatePlayer(player);
 
         // if player is infect and weapon is knife then ignore all of it.
         if (_player.IsClientInfected(player) && !weapon.IsKnife)

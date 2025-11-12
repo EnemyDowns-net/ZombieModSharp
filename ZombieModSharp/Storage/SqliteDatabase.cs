@@ -37,6 +37,8 @@ public class SqliteDatabase : ISqliteDatabase
 
     public async Task<bool> InsertPlayerClassesAsync(string playerAuth, string humanClass, string zombieClass)
     {
+        // _logger.LogInformation("Insert classes for {playerAuth} : {human} | {zombie}", playerAuth, humanClass, zombieClass);
+        
         var result = await _connection.ExecuteAsync(@"
             INSERT INTO zs_playerclasses (player_auth, human_class, zombie_class)
             VALUES (@PlayerAuth, @HumanClass, @ZombieClass)
@@ -50,6 +52,8 @@ public class SqliteDatabase : ISqliteDatabase
 
     public async Task<SavedClasses?> GetPlayerClassesAsync(string playerAuth)
     {
+        // _logger.LogInformation("Try get data for {steamid}", playerAuth);
+
         var classes = await _connection.QueryFirstOrDefaultAsync<SavedClasses>(@"
             SELECT zombie_class AS ZombieClass, human_class AS HumanClass
             FROM zs_playerclasses

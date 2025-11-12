@@ -10,21 +10,27 @@ public class Configs : IConfigs
     private readonly ILogger<Configs> _logger;
     private readonly IWeapons _weapons;
     private readonly IHitGroup _hitGroup;
+    private readonly IPrecacheManager _precacheManager;
+    private readonly IPlayerClasses _playerClasses;
 
-    public Configs(ISharedSystem sharedSystem, ILogger<Configs> logger, IWeapons weapons, IHitGroup hitGroup)
+    private static string configPath = string.Empty;
+
+    public Configs(ISharedSystem sharedSystem, ILogger<Configs> logger, IWeapons weapons, IHitGroup hitGroup, IPrecacheManager precacheManager, IPlayerClasses playerClasses)
     {
         _sharedSystem = sharedSystem;
         _logger = logger;
         _weapons = weapons;
         _hitGroup = hitGroup;
+        _precacheManager = precacheManager;
+        _playerClasses = playerClasses;
     }
 
-    public void PostInit()
+    public void Init()
     {
         _logger.LogInformation("Configs.PostInit() called");
-        
+
         var gamePath = _sharedSystem.GetModSharp().GetGamePath();
-        var configPath = Path.Combine(gamePath, "../sharp", "configs", "zombiemodsharp");
+        configPath = Path.Combine(gamePath, "../sharp", "configs", "zombiemodsharp");
 
         if (!Directory.Exists(configPath))
         {
@@ -33,6 +39,8 @@ public class Configs : IConfigs
         }
 
         _logger.LogInformation("Loading weapons config...");
+        _precacheManager.LoadConfig(configPath);
+        _playerClasses.LoadConfig(configPath);
         _weapons.LoadConfig(configPath);
         _hitGroup.LoadConfig(configPath);
     }
