@@ -20,8 +20,9 @@ public class Listeners : IListeners, IClientListener, IGameListener
     private readonly ISqliteDatabase _sqlite;
     private readonly ICvarManager _cvar;
     private readonly IPlayerClasses _playerClasses;
+    private readonly IPrecacheManager _precacheManager;
 
-    public Listeners(IPlayerManager playerManager, ISharedSystem sharedSystem, ISqliteDatabase sqlite, ICvarManager cvar, IPlayerClasses playerClasses)
+    public Listeners(IPlayerManager playerManager, ISharedSystem sharedSystem, ISqliteDatabase sqlite, ICvarManager cvar, IPlayerClasses playerClasses, IPrecacheManager precacheManager)
     {
         _playerManager = playerManager;
         _sharedSystem = sharedSystem;
@@ -30,6 +31,7 @@ public class Listeners : IListeners, IClientListener, IGameListener
         _sqlite = sqlite;
         _cvar = cvar;
         _playerClasses = playerClasses;
+        _precacheManager = precacheManager;
     }
 
     public void Init()
@@ -54,19 +56,22 @@ public class Listeners : IListeners, IClientListener, IGameListener
 
             if (classes == null)
             {
-                _logger.LogInformation("Found nothing.");
+                // _logger.LogInformation("Found nothing.");
 
                 humanClass = _cvar.CvarList["Cvar_HumanDefault"]!.GetString();
                 zombieClass = _cvar.CvarList["Cvar_ZombieDefault"]!.GetString();
 
-                await _sqlite.InsertPlayerClassesAsync(id, humanClass, zombieClass);
+                // _logger.LogInformation("Try insert {human} | {zombie}", humanClass, zombieClass);
+
+                var insertResult = await _sqlite.InsertPlayerClassesAsync(id, humanClass, zombieClass);
+                _logger.LogInformation("Insert result for {SteamId}: {Result}", id, insertResult);
             }
             else
             {
                 humanClass = classes.HumanClass;
                 zombieClass = classes.ZombieClass;
 
-                _logger.LogInformation("Found {human} | {zombie}", classes.HumanClass, classes.ZombieClass);
+                // _logger.LogInformation("Found {human} | {zombie}", classes.HumanClass, classes.ZombieClass);
             }
 
             var player = _playerManager.GetOrCreatePlayer(client);
@@ -88,7 +93,8 @@ public class Listeners : IListeners, IClientListener, IGameListener
     public void OnResourcePrecache()
     {
         _logger.LogInformation("Precache GoldShip Here");
-        _modsharp.PrecacheResource("characters/models/oylsister/uma_musume/gold_ship/goldship2.vmdl");
-        _modsharp.PrecacheResource("characters/models/s2ze/zombie_frozen/zombie_frozen.vmdl");
+        //_modsharp.PrecacheResource("characters/models/oylsister/uma_musume/gold_ship/goldship2.vmdl");
+        //_modsharp.PrecacheResource("characters/models/s2ze/zombie_frozen/zombie_frozen.vmdl");
+        _precacheManager.PrecacheAllResource();
     }
 }
