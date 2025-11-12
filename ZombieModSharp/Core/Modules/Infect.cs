@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using ZombieModSharp.Abstractions;
 using Sharp.Shared;
 using ZombieModSharp.Abstractions.Entities;
+using Sharp.Shared.Types;
 
 namespace ZombieModSharp.Core.Modules;
 
@@ -60,28 +61,15 @@ public class Infect : IInfect
         // implement model changed and health.
         var pawn = clientController.GetPlayerPawn();
 
-        if(pawn == null)
+        if (pawn == null)
         {
             _logger.LogError("The client controller is null!");
             return;
         }
+        
+        pawn.EmitSound("zr.amb.scream", 1.0f, new RecipientFilter(_player.GetAllPlayers().Keys));
 
         _playerClasses.ApplyPlayerClassAttribute(pawn, zmPlayer.ZombieClass!);
-
-        /*
-        pawn.Health = 8000;
-        pawn.ArmorValue = 0;
-        try
-        {
-            pawn.GetItemService()!.HasHelmet = false;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError("Error: {ex}", ex);
-        }
-
-        pawn.SetModel("characters/models/s2ze/zombie_frozen/zombie_frozen.vmdl");
-        */
 
         // forcing drop all weapon.
         var weapons = pawn.GetWeaponService()?.GetMyWeapons();
@@ -171,12 +159,6 @@ public class Infect : IInfect
         }
 
         _playerClasses.ApplyPlayerClassAttribute(pawn, zmPlayer.HumanClass!);
-
-        /*
-        pawn.Health = 100;
-        pawn.ArmorValue = 100;
-        pawn.SetModel("characters/models/oylsister/uma_musume/gold_ship/goldship2.vmdl");
-        */
     }
 
     public void OnRoundPreStart()
