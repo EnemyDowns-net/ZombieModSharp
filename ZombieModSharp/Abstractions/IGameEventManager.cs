@@ -1,6 +1,6 @@
 namespace ZombieModSharp.Abstractions;
 
-public interface IEvents
+public interface IGameEventManager
 {
     void Init();
     void RegisterEvents();

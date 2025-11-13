@@ -19,7 +19,7 @@ public sealed class ZombieModSharp : IModSharpModule
     // private readonly InterfaceBridge  _bridge;
     private readonly ServiceProvider  _serviceProvider;
     private readonly ISharedSystem _sharedSystem;
-    private readonly IEvents _eventListener;
+    private readonly IGameEventManager _eventListener;
     private readonly IListeners _listeners;
     private readonly ICommand _command;
     private readonly IHooks _hooks;
@@ -70,7 +70,7 @@ public sealed class ZombieModSharp : IModSharpModule
 
         // Get services from DI container instead of manual instantiation
         _sqliteDatabase = _serviceProvider.GetRequiredService<ISqliteDatabase>();
-        _eventListener = _serviceProvider.GetRequiredService<IEvents>();
+        _eventListener = _serviceProvider.GetRequiredService<IGameEventManager>();
         _listeners = _serviceProvider.GetRequiredService<IListeners>();
         _command = _serviceProvider.GetRequiredService<ICommand>();
         _hooks = _serviceProvider.GetRequiredService<IHooks>();

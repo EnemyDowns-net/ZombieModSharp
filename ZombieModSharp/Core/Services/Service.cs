@@ -9,11 +9,10 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddZombieModSharpServices(this IServiceCollection services)
     {
-        services.AddSingleton<IEvents, Events>()
+        services.AddSingleton<IGameEventManager, GameEventManager>()
             .AddSingleton<IPlayerManager, PlayerManager>()
             .AddSingleton<IInfect, Infect>()
             .AddSingleton<IListeners, Listeners>()
-            .AddSingleton<IZTele, ZTele>()
             .AddSingleton<ICommand, Command>()
             .AddSingleton<IHooks, Hooks>()
             .AddSingleton<IKnockback, Knockback>()

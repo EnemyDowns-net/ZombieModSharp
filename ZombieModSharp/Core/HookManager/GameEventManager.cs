@@ -9,17 +9,16 @@ using ZombieModSharp.Abstractions;
 
 namespace ZombieModSharp.Core.HookManager;
 
-public class Events : IEvents, IEventListener
+public class GameEventManager : IGameEventManager, IEventListener
 {
     private readonly ISharedSystem _sharedSystem;
     private readonly IEventManager _eventManager;
-    private readonly ILogger<Events> _logger;
+    private readonly ILogger<GameEventManager> _logger;
     private readonly IClientManager _clientManager;
-    private readonly IPlayerManager _player;
+    private readonly IPlayerManager _playerManager;
     private readonly IEntityManager _entityManager;
     private readonly IInfect _infect;
     private readonly IModSharp _modSharp;
-    private readonly IZTele _ztele;
     private readonly IKnockback _knockback;
 
     public int ListenerVersion => IEventListener.ApiVersion;
@@ -27,17 +26,16 @@ public class Events : IEvents, IEventListener
 
     public bool RoundEnded { get; private set; } = false;
 
-    public Events(ISharedSystem sharedSystem, ILogger<Events> logger, IPlayerManager player, IInfect infect, IZTele ztele, IKnockback knockback)
+    public GameEventManager(ISharedSystem sharedSystem, ILogger<GameEventManager> logger, IPlayerManager playerManager, IInfect infect, IKnockback knockback)
     {
         _sharedSystem = sharedSystem;
         _eventManager = _sharedSystem.GetEventManager();
         _logger = logger;
         _clientManager = _sharedSystem.GetClientManager();
-        _player = player;
+        _playerManager = playerManager;
         _modSharp = _sharedSystem.GetModSharp();
         _infect = infect;
         _entityManager = _sharedSystem.GetEntityManager();
-        _ztele = ztele;
         _knockback = knockback;
     }
 
@@ -109,8 +107,8 @@ public class Events : IEvents, IEventListener
             return;
         }
 
-        var zmClient = _player.GetOrCreatePlayer(client);
-        var zmAttacker = _player.GetOrCreatePlayer(attackerClient);
+        var zmClient = _playerManager.GetOrCreatePlayer(client);
+        var zmAttacker = _playerManager.GetOrCreatePlayer(attackerClient);
 
         if (zmClient.IsHuman() && zmAttacker.IsInfected())
         {
@@ -200,7 +198,7 @@ public class Events : IEvents, IEventListener
             else
                 _infect.HumanizeClient(client);
 
-            _ztele.OnPlayerSpawn(client);
+            _playerManager.OnPlayerSpawn(client);
         }, 0.05, GameTimerFlags.None | GameTimerFlags.StopOnMapEnd | GameTimerFlags.StopOnRoundEnd);
     }
 }

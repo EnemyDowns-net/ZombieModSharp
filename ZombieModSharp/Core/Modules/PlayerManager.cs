@@ -31,6 +31,37 @@ public class PlayerManager : IPlayerManager
         return _players;
     }
 
+    public void OnPlayerSpawn(IGameClient client)
+    {
+        var player = GetOrCreatePlayer(client);
+
+        var clientEnt = client.GetPlayerController()?.GetPlayerPawn();
+
+        if (clientEnt == null)
+            return;
+
+        if (!clientEnt.IsAlive)
+            return;
+
+        player.SpawnPoint = clientEnt.GetAbsOrigin();
+        player.SpawnRotation = clientEnt.GetAbsAngles();
+    }
+
+    public void TeleportToSpawn(IGameClient client)
+    {
+        var player = GetOrCreatePlayer(client);
+
+        var clientEnt = client.GetPlayerController()?.GetPlayerPawn();
+
+        if (clientEnt == null)
+            return;
+
+        if (!clientEnt.IsAlive)
+            return;
+
+        clientEnt.Teleport(player.SpawnPoint, player.SpawnRotation, null);
+    }
+
     public void RemovePlayer(IGameClient client)
     {
         _players.Remove(client);

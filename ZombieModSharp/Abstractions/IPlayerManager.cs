@@ -10,4 +10,6 @@ public interface IPlayerManager
     public void RemovePlayer(IGameClient client);
     public bool IsClientInfected(IGameClient client);
     public bool IsClientHuman(IGameClient client);
+    public void OnPlayerSpawn(IGameClient client);
+    public void TeleportToSpawn(IGameClient client);
 }
