@@ -20,9 +20,10 @@ public class Listeners : IListeners, IClientListener, IGameListener
     private readonly ISqliteDatabase _sqlite;
     private readonly ICvarManager _cvar;
     private readonly IPlayerClasses _playerClasses;
-    private readonly IPrecacheManager _precacheManager;
+    // private readonly IPrecacheManager _precacheManager;
+    private readonly IConfigManager _configManager;
 
-    public Listeners(IPlayerManager playerManager, ISharedSystem sharedSystem, ISqliteDatabase sqlite, ICvarManager cvar, IPlayerClasses playerClasses, IPrecacheManager precacheManager)
+    public Listeners(IPlayerManager playerManager, ISharedSystem sharedSystem, ISqliteDatabase sqlite, ICvarManager cvar, IPlayerClasses playerClasses, IConfigManager configManager)
     {
         _playerManager = playerManager;
         _sharedSystem = sharedSystem;
@@ -31,7 +32,7 @@ public class Listeners : IListeners, IClientListener, IGameListener
         _sqlite = sqlite;
         _cvar = cvar;
         _playerClasses = playerClasses;
-        _precacheManager = precacheManager;
+        _configManager = configManager;
     }
 
     public void Init()
@@ -93,8 +94,6 @@ public class Listeners : IListeners, IClientListener, IGameListener
     public void OnResourcePrecache()
     {
         _logger.LogInformation("Precache GoldShip Here");
-        //_modsharp.PrecacheResource("characters/models/oylsister/uma_musume/gold_ship/goldship2.vmdl");
-        //_modsharp.PrecacheResource("characters/models/s2ze/zombie_frozen/zombie_frozen.vmdl");
-        _precacheManager.PrecacheAllResource();
+        _configManager.PrecacheAllResource();
     }
 }

@@ -9,19 +9,17 @@ public class Knockback : IKnockback
 {
     private readonly ISharedSystem _sharedSystem;
     private readonly ILogger<Knockback> _logger;
-    private readonly IPlayerManager _player;
-    private readonly IWeapons _weapons;
-    private readonly IHitGroup _hitgroup;
+    private readonly IPlayerManager _playerManager;
     private readonly IModSharp _modsharp;
+    private readonly IConfigManager _configManager;
 
-    public Knockback(ISharedSystem sharedSystem, ILogger<Knockback> logger, IPlayerManager player, IWeapons weapons, IHitGroup hitGroup)
+    public Knockback(ISharedSystem sharedSystem, ILogger<Knockback> logger, IPlayerManager playerManager, IConfigManager configManager)
     {
         _sharedSystem = sharedSystem;
         _logger = logger;
-        _player = player;
-        _weapons = weapons;
-        _hitgroup = hitGroup;
+        _playerManager = playerManager;
         _modsharp = _sharedSystem.GetModSharp();
+        _configManager = configManager;
     }
 
     public void KnockbackClient(IGameClient client, IGameClient attacker, string weapon, float damage, int hitGroup)
@@ -33,7 +31,7 @@ public class Knockback : IKnockback
             return;
 
         // knockback is for zombie only.
-        if (!_player.IsClientHuman(attacker) || !_player.IsClientInfected(client))
+        if (!_playerManager.IsClientHuman(attacker) || !_playerManager.IsClientInfected(client))
             return;
 
         var attackerPawn = attacker.GetPlayerController()?.GetPlayerPawn();
@@ -47,9 +45,9 @@ public class Knockback : IKnockback
         var attackerEye = attackerPawn.GetEyeAngles();
         var foward = attackerEye.AnglesToVectorForward();
 
-        var classKnockback = _player.GetOrCreatePlayer(client).ActiveClass?.Knockback ?? 3.0f;
-        var weaponknockback = _weapons.GetWeaponKnockback(weapon);
-        var hitgroupsKnockback = _hitgroup.GetHitgroupKnockback(hitGroup);
+        var classKnockback = _playerManager.GetOrCreatePlayer(client).ActiveClass?.Knockback ?? 3.0f;
+        var weaponknockback = GetWeaponKnockback(weapon);
+        var hitgroupsKnockback = GetHitgroupKnockback(hitGroup);
 
         // _modsharp.PrintToChatAll($"KB data: {weaponknockback:F2} | {hitgroupsKnockback:F2}");
 
@@ -62,5 +60,26 @@ public class Knockback : IKnockback
 
         var veloCity = playerPawn.GetAbsVelocity();
         playerPawn.Teleport(null, null, veloCity + pushVelocity);
+    }
+
+    
+    public float GetHitgroupKnockback(int hitgroup)
+    {
+        if (hitgroup >= _configManager.HitgroupData.Length || hitgroup < 0)
+            return 1.0f;
+
+        return _configManager.HitgroupData[hitgroup];
+    }
+
+    public float GetWeaponKnockback(string weaponentity)
+    {
+        if (!_configManager.WeaponConfig.TryGetValue(weaponentity, out var weaponData))
+        {
+            _modsharp.PrintToChatAll($"No weapons name {weaponentity}");
+            return 1.0f;
+        }
+
+        _modsharp.PrintToChatAll($"Found {weaponData.EntityName} and KB: {weaponData.Knockback}");
+        return weaponData.Knockback;
     }
 }
