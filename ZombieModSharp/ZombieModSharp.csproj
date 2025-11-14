@@ -7,15 +7,16 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <Version>0.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Dapper" Version="2.1.66" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.10" />
-    <PackageReference Include="ModSharp.Sharp.Generator.Sdk" Version="2.0.69">
+    <PackageReference Include="ModSharp.Sharp.Generator.Sdk" Version="2.0.75">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="ModSharp.Sharp.Shared" Version="2.0.69" />
+    <PackageReference Include="ModSharp.Sharp.Shared" Version="2.0.75" />
   </ItemGroup>
 </Project>

@@ -85,15 +85,16 @@ public sealed class ZombieModSharp : IModSharpModule
 
         _listeners.Init();
         _eventListener.Init();
+        _hooks.Init();
+        _command.Init();
+        _cvarManager.Init();
+        _configs.Init();
 
         var _gamedata = _sharedSystem.GetModSharp().GetGameData();
         _gamedata.Register("ZombieModSharp.jsonc");
 
         var modsharp = _sharedSystem.GetModSharp();
         modsharp.InvokeFrameActionAsync(async () => await _sqliteDatabase.Init());
-        _cvarManager.Init();
-
-        _configs.Init();
 
         return true;
     }
@@ -101,14 +102,16 @@ public sealed class ZombieModSharp : IModSharpModule
     public void Shutdown()
     {
         // _logger.LogInformation("See you around, Nameless~ Try to stay out of trouble, especially... the next time we meet!");
+        _listeners.Shutdown();
+        _eventListener.Shutdown();
+        _hooks.Shutdown();
+        _command.Shutdown();
     }
 
     public void PostInit()
     {
         // _logger.LogInformation("Why don't you stay and play for a while?");
-        _eventListener.RegisterEvents();
-        _hooks.PostInit();
-        _command.PostInit();
+        // _eventListener.RegisterEvents();
     }
 
     public void OnAllModulesLoaded()

@@ -25,10 +25,15 @@ public class Hooks : IHooks
         _entityManager = _sharedSystem.GetEntityManager();
     }
 
-    public void PostInit()
+    public void Init()
     {
         _hookManager.PlayerWeaponCanEquip.InstallHookPre(OnCanEquip);
         // _hookManager.PlayerDispatchTraceAttack.InstallHookPost(OnTakeDamaged);
+    }
+
+    public void Shutdown()
+    {
+        _hookManager.PlayerWeaponCanEquip.RemoveHookPre(OnCanEquip);
     }
 
     private HookReturnValue<bool> OnCanEquip(IPlayerWeaponCanEquipHookParams param, HookReturnValue<bool> result)

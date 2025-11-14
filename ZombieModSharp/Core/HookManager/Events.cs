@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Sharp.Shared;
 using Sharp.Shared.Enums;
+using Sharp.Shared.GameEvents;
 using Sharp.Shared.Listeners;
 using Sharp.Shared.Managers;
 using Sharp.Shared.Objects;
@@ -44,6 +45,12 @@ public class Events : IEvents, IEventListener
     public void Init()
     {
         _eventManager.InstallEventListener(this);
+        RegisterEvents();
+    }
+
+    public void Shutdown()
+    {
+        _eventManager.RemoveEventListener(this);
     }
 
     public void RegisterEvents()

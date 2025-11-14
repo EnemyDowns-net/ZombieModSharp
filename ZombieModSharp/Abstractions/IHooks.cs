@@ -2,5 +2,6 @@ namespace ZombieModSharp.Abstractions;
 
 public interface IHooks
 {
-    public void PostInit();
+    public void Init();
+    public void Shutdown();
 }

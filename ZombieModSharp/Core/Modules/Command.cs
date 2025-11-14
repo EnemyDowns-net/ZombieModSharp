@@ -26,11 +26,18 @@ public class Command : ICommand
         _modsharp = _sharedSystem.GetModSharp();
     }
 
-    public void PostInit()
+    public void Init()
     {
         _clientManager.InstallCommandCallback("ztele", ZTeleCommand);
         _clientManager.InstallCommandCallback("infect", InfectCommand);
         _clientManager.InstallCommandCallback("human", HumanizeCommand);
+    }
+
+    public void Shutdown()
+    {
+        _clientManager.RemoveCommandCallback("ztele", ZTeleCommand);
+        _clientManager.RemoveCommandCallback("infect", InfectCommand);
+        _clientManager.RemoveCommandCallback("human", HumanizeCommand);
     }
 
     private ECommandAction ZTeleCommand(IGameClient client, StringCommand command)

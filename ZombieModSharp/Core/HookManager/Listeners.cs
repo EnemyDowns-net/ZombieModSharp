@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Sharp.Shared;
 using Sharp.Shared.Enums;
+using Sharp.Shared.GameEntities;
 using Sharp.Shared.Listeners;
 using Sharp.Shared.Objects;
 using ZombieModSharp.Abstractions;
@@ -8,7 +9,7 @@ using ZombieModSharp.Abstractions.Storage;
 
 namespace ZombieModSharp.Core.HookManager;
 
-public class Listeners : IListeners, IClientListener, IGameListener
+public class Listeners : IListeners, IClientListener, IGameListener, IEntityListener
 {
     public int ListenerVersion => IClientListener.ApiVersion;
     public int ListenerPriority => 0;
@@ -37,7 +38,15 @@ public class Listeners : IListeners, IClientListener, IGameListener
     public void Init()
     {
         _sharedSystem.GetClientManager().InstallClientListener(this);
+        _sharedSystem.GetEntityManager().InstallEntityListener(this);
         _modsharp.InstallGameListener(this);
+    }
+
+    public void Shutdown()
+    {
+        _sharedSystem.GetClientManager().RemoveClientListener(this);
+        _sharedSystem.GetEntityManager().RemoveEntityListener(this);
+        _modsharp.RemoveGameListener(this);
     }
 
     public void OnClientPutInServer(IGameClient client)
@@ -88,6 +97,20 @@ public class Listeners : IListeners, IClientListener, IGameListener
             return;
 
         _playerManager.RemovePlayer(client);
+    }
+
+    public void OnEntityCreated(IBaseEntity entity)
+    {
+        if(entity.Classname.Contains("weapon_"))
+        {
+            // _modsharp.PrintToChatAll($"Found {entity.Classname}");
+
+            _modsharp.PushTimer(() => {
+            var weapon = entity.As<IBaseWeapon>();
+            weapon.GetWeaponData().PrimaryReserveAmmoMax = 1200;
+            weapon.ReserveAmmo = 1200;
+            }, 0.07, GameTimerFlags.None|GameTimerFlags.StopOnRoundEnd|GameTimerFlags.StopOnMapEnd);
+        }
     }
 
     public void OnResourcePrecache()
