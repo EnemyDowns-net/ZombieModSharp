@@ -20,7 +20,7 @@ public static class ServiceCollectionExtensions
             .AddSingleton<IWeapons, Weapons>()
             .AddSingleton<IConfigs, Configs>()
             .AddSingleton<IHitGroup, HitGroup>()
-            .AddSingleton<ICvarManager, CvarManager>()
+            .AddSingleton<ICvarServices, CvarServices>()
             .AddSingleton<IPlayerClasses, PlayerClasses>()
             .AddSingleton<IPrecacheManager, PrecacheManager>();
         return services;

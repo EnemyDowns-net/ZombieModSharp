@@ -7,18 +7,18 @@ using ZombieModSharp.Abstractions;
 
 namespace ZombieModSharp.Core.HookManager;
 
-public class CvarManager : ICvarManager
+public class CvarServices : ICvarServices
 {
     private readonly ISharedSystem _sharedSystem;
-    private readonly ILogger<CvarManager> _logger;
+    private readonly ILogger<CvarServices> _logger;
 
     // Declare here I guess
     public Dictionary<string, IConVar?> CvarList { get; set; } = [];
 
-    public CvarManager(ISharedSystem sharedSystem)
+    public CvarServices(ISharedSystem sharedSystem)
     {
         _sharedSystem = sharedSystem;
-        _logger = _sharedSystem.GetLoggerFactory().CreateLogger<CvarManager>();
+        _logger = _sharedSystem.GetLoggerFactory().CreateLogger<CvarServices>();
     }
     
     public void Init()
