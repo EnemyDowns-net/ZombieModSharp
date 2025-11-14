@@ -68,6 +68,7 @@ public class Infect : IInfect
         }
         
         pawn.EmitSound("zr.amb.scream", 1.0f, new RecipientFilter(_player.GetAllPlayers().Keys));
+        _modSharp.PrintChannelFilter(HudPrintChannel.Chat, $"{ZombieModSharp.Prefix} You have been infected! Go pass it on to as many other players as you can.", new RecipientFilter(client));
 
         _playerClasses.ApplyPlayerClassAttribute(pawn, zmPlayer.ZombieClass!);
 
@@ -149,6 +150,9 @@ public class Infect : IInfect
 
         clientController.SwitchTeam(CStrikeTeam.CT);
 
+        if(force)
+            _modSharp.PrintChannelFilter(HudPrintChannel.Chat, $"{ZombieModSharp.Prefix} The merciful gods (known as admins) have resurrected your soul, find some cover!", new RecipientFilter(client));
+
         // implement model changed and health.
         var pawn = clientController.GetPawn();
 
@@ -184,7 +188,7 @@ public class Infect : IInfect
 
     public void OnRoundStart()
     {
-        _modSharp.PrintChannelAll(HudPrintChannel.Chat, " \x04[Z:MS]\x01 Current game mode is \x05Humans vs. Zombies\x01, the goal for zombies is to infect all humans by knifing them.");
+        _modSharp.PrintChannelAll(HudPrintChannel.Chat, $"{ZombieModSharp.Prefix} Current game mode is \x05Humans vs. Zombies\x01, the goal for zombies is to infect all humans by knifing them.");
     }
 
     public void OnRoundFreezeEnd()
@@ -343,7 +347,7 @@ public class Infect : IInfect
             candidate = _player.GetAllPlayers().Where(p => p.Value.MotherZombieStatus == MotherZombieStatus.None
                 && (p.Key.GetPlayerController()?.IsAlive ?? false));
 
-            _modSharp.PrintChannelAll(HudPrintChannel.Chat, "Mother Zombie has been reset.");
+            _modSharp.PrintChannelAll(HudPrintChannel.Chat, $"{ZombieModSharp.Prefix} Mother Zombie has been reset.");
         }
 
         if (requireZm - made <= 0)
