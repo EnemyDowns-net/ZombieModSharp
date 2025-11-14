@@ -27,7 +27,7 @@ public sealed class ZombieModSharp : IModSharpModule
     private readonly ISqliteDatabase _sqliteDatabase;
     private readonly ICvarServices _cvarManager;
 
-    // outside module
+    public static string Prefix { get; } = " \x04[Z:MS]\x01";
 
     public ZombieModSharp(ISharedSystem sharedSystem,
                       string dllPath,
