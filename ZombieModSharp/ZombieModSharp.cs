@@ -25,7 +25,7 @@ public sealed class ZombieModSharp : IModSharpModule
     private readonly IHooks _hooks;
     private readonly IConfigs _configs;
     private readonly ISqliteDatabase _sqliteDatabase;
-    private readonly ICvarManager _cvarManager;
+    private readonly ICvarServices _cvarManager;
 
     // outside module
 
@@ -75,7 +75,7 @@ public sealed class ZombieModSharp : IModSharpModule
         _command = _serviceProvider.GetRequiredService<ICommand>();
         _hooks = _serviceProvider.GetRequiredService<IHooks>();
         _configs = _serviceProvider.GetRequiredService<IConfigs>();
-        _cvarManager = _serviceProvider.GetRequiredService<ICvarManager>();
+        _cvarManager = _serviceProvider.GetRequiredService<ICvarServices>();
     }
 
     public bool Init()

@@ -18,11 +18,11 @@ public class Listeners : IListeners, IClientListener, IGameListener
     private readonly ILogger<Listeners> _logger;
     private readonly IModSharp _modsharp;
     private readonly ISqliteDatabase _sqlite;
-    private readonly ICvarManager _cvar;
+    private readonly ICvarServices _cvar;
     private readonly IPlayerClasses _playerClasses;
     private readonly IPrecacheManager _precacheManager;
 
-    public Listeners(IPlayerManager playerManager, ISharedSystem sharedSystem, ISqliteDatabase sqlite, ICvarManager cvar, IPlayerClasses playerClasses, IPrecacheManager precacheManager)
+    public Listeners(IPlayerManager playerManager, ISharedSystem sharedSystem, ISqliteDatabase sqlite, ICvarServices cvar, IPlayerClasses playerClasses, IPrecacheManager precacheManager)
     {
         _playerManager = playerManager;
         _sharedSystem = sharedSystem;
