@@ -42,6 +42,8 @@ public class PlayerClasses : IPlayerClasses
             return;
         }
 
+        classesData.Clear();
+
         try
         {
             var jsonContent = File.ReadAllText(configPath);

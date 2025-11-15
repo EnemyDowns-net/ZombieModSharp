@@ -30,6 +30,8 @@ public class PrecacheManager : IPrecacheManager
             return;
         }
 
+        _precacheList.Clear();
+
         // read all line in .txt file and ignore the line that start with // or empty space.
         _modsharp.InvokeFrameActionAsync(async () =>
         {

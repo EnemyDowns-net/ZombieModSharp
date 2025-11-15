@@ -36,6 +36,8 @@ public class Weapons : IWeapons
             return;
         }
 
+        weaponDatas.Clear();
+
         try
         {
             var jsonContent = File.ReadAllText(configPath);
@@ -63,11 +65,11 @@ public class Weapons : IWeapons
     {
         if (!weaponDatas.TryGetValue(weaponentity, out var weaponData))
         {
-            //_modsharp.PrintToChatAll($"No weapons name {weaponentity}");
+            // _modsharp.PrintToChatAll($"No weapons name {weaponentity}");
             return 1.0f;
         }
 
-        //_modsharp.PrintToChatAll($"Found {weaponData.EntityName} and KB: {weaponData.Knockback}");
+        // _modsharp.PrintToChatAll($"Found {weaponData.EntityName} and KB: {weaponData.Knockback}");
         return weaponData.Knockback;
     }
 }

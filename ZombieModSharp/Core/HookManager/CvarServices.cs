@@ -28,6 +28,10 @@ public class CvarServices : ICvarServices
         CvarList["Cvar_HumanDefault"] = conVar.CreateConVar("zms_human_class_default", "human_default", "Default human class when player join", ConVarFlags.Release);
         CvarList["Cvar_ZombieDefault"] = conVar.CreateConVar("zms_zombie_class_default", "zombie_default", "Default zombie class when player join", ConVarFlags.Release);
 
+        CvarList["Cvar_InfectCountdown"] = conVar.CreateConVar("zms_infect_countdown", 10.0f, "Infection Countdown", ConVarFlags.Release);
+        CvarList["Cvar_InfectMotherZombieRatio"] = conVar.CreateConVar("zms_infect_motherzombie_ratio", 7.0f, "Motherzombie ratio for fist infection", ConVarFlags.Release);
+        CvarList["Cvar_InfectMinimumZombie"] = conVar.CreateConVar("zms_infect_minimum_zombie", 1, "Minimum zombie to spawn on first infection.", ConVarFlags.Release); 
+        CvarList["Cvar_InfectNoblockEnable"] =  conVar.CreateConVar("zms_infect_noblock_enable", true, "Enable noblock between player or not.", ConVarFlags.Release);
         // we check if covar existed or not.
         
     }

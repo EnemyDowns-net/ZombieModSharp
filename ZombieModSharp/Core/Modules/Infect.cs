@@ -19,10 +19,11 @@ public class Infect : IInfect
     private readonly IPlayerManager _player;
     private readonly IModSharp _modSharp;
     private readonly IPlayerClasses _playerClasses;
+    private readonly ICvarServices _cvarServices;
 
     private bool InfectStarted = false;
 
-    public Infect(ISharedSystem sharedSystem, ILogger<Infect> logger, IPlayerManager player, IPlayerClasses playerClasses)
+    public Infect(ISharedSystem sharedSystem, ILogger<Infect> logger, IPlayerManager player, IPlayerClasses playerClasses, ICvarServices cvarServices)
     {
         _sharedSystem = sharedSystem;
         _entityManager = _sharedSystem.GetEntityManager();
@@ -31,6 +32,7 @@ public class Infect : IInfect
         _player = player;
         _modSharp = _sharedSystem.GetModSharp();
         _playerClasses = playerClasses;
+        _cvarServices = cvarServices;
     }
 
     public void InfectPlayer(IGameClient client, IGameClient? attacker = null, bool motherzombie = false, bool force = false)
@@ -262,7 +264,7 @@ public class Infect : IInfect
 
     private void InitialCountDown()
     {
-        int timerCount = 15;
+        var timerCount = _cvarServices.CvarList["Cvar_InfectCountdown"]?.GetFloat() ?? 15.0f;
 
         var timer = _modSharp.PushTimer(new Func<TimerAction>(() =>
         {
@@ -278,7 +280,7 @@ public class Infect : IInfect
                 _logger.LogError("Error: {e}", e);
                 return TimerAction.Stop;
             }
-        }), 15.0f, GameTimerFlags.StopOnRoundEnd | GameTimerFlags.StopOnMapEnd);
+        }), timerCount, GameTimerFlags.StopOnRoundEnd | GameTimerFlags.StopOnMapEnd);
 
         _modSharp.PrintChannelAll(HudPrintChannel.Hint, $"First infection start in {timerCount} seconds");
 
@@ -314,11 +316,12 @@ public class Infect : IInfect
         var totalPlayer = _player.GetAllPlayers().Where(p => p.Key.GetPlayerController()?.IsAlive ?? false).Count();
 
         // Calculate
-        var requireZm = totalPlayer / 7;
+        var ratio = _cvarServices.CvarList["Cvar_InfectMotherZombieRatio"]?.GetFloat() ?? 7.0f;
+        var requireZm = totalPlayer / ratio;
 
         // if zombie is less than 0 then make one.
         if (requireZm <= 0)
-            requireZm = 1;
+            requireZm = _cvarServices.CvarList["Cvar_InfectMinimumZombie"]?.GetInt32() ?? 1;
 
         int made = 0;
 
@@ -355,7 +358,7 @@ public class Infect : IInfect
 
         var random = new Random();
         var shuffledCandidates = candidate.OrderBy(x => random.Next()).ToList();
-        var selectedMotherZombies = shuffledCandidates.Take(requireZm - made);
+        var selectedMotherZombies = shuffledCandidates.Take((int)Math.Floor(requireZm) - made);
 
         foreach (var player in selectedMotherZombies)
         {

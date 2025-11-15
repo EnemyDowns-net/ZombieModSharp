@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Sharp.Shared;
+using Sharp.Shared.GameEntities;
 using Sharp.Shared.Objects;
 using ZombieModSharp.Abstractions;
 
@@ -45,6 +46,22 @@ public class Knockback : IKnockback
         {
             _logger?.LogError("attacker pawn is null!");
             return;
+        }
+
+        // for more precise weapon, we need to get item defenition name.
+        var weaponentity = attackerPawn.GetActiveWeapon();
+
+        if(weaponentity != null)
+        {
+            if(weaponentity.IsKnife)
+                weapon = "knife";
+
+            else
+            {
+                weapon = weaponentity.As<IBaseWeapon>().GetItemDefinitionName();
+                if (weapon.StartsWith("weapon_"))
+                    weapon = weapon.Substring(7); // Remove the "weapon_" prefix
+            }
         }
 
         var attackerEye = attackerPawn.GetEyeAngles();

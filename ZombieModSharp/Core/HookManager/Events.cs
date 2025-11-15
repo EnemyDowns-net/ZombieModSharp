@@ -17,18 +17,18 @@ public class Events : IEvents, IEventListener
     private readonly ILogger<Events> _logger;
     private readonly IClientManager _clientManager;
     private readonly IPlayerManager _player;
-    private readonly IEntityManager _entityManager;
     private readonly IInfect _infect;
     private readonly IModSharp _modSharp;
     private readonly IZTele _ztele;
     private readonly IKnockback _knockback;
+    private readonly ICvarServices _cvarServices;
 
     public int ListenerVersion => IEventListener.ApiVersion;
     public int ListenerPriority => 0;
 
     public bool RoundEnded { get; private set; } = false;
 
-    public Events(ISharedSystem sharedSystem, ILogger<Events> logger, IPlayerManager player, IInfect infect, IZTele ztele, IKnockback knockback)
+    public Events(ISharedSystem sharedSystem, ILogger<Events> logger, IPlayerManager player, IInfect infect, IZTele ztele, IKnockback knockback, ICvarServices cvarServices)
     {
         _sharedSystem = sharedSystem;
         _eventManager = _sharedSystem.GetEventManager();
@@ -37,9 +37,9 @@ public class Events : IEvents, IEventListener
         _player = player;
         _modSharp = _sharedSystem.GetModSharp();
         _infect = infect;
-        _entityManager = _sharedSystem.GetEntityManager();
         _ztele = ztele;
         _knockback = knockback;
+        _cvarServices = cvarServices;
     }
 
     public void Init()
@@ -208,6 +208,15 @@ public class Events : IEvents, IEventListener
                 _infect.HumanizeClient(client);
 
             _ztele.OnPlayerSpawn(client);
+            // this is for noblock
+            var noblock = _cvarServices.CvarList["Cvar_InfectNoblockEnable"]?.GetBool() ?? false;
+
+            // _modSharp.PrintToChatAll($"Noblock = {noblock}");
+
+            if(noblock)
+            {
+                pawn?.GetPlayerPawn()?.SetCollisionGroup(CollisionGroupType.Debris);
+            }
         }, 0.05, GameTimerFlags.None | GameTimerFlags.StopOnMapEnd | GameTimerFlags.StopOnRoundEnd);
     }
 }
