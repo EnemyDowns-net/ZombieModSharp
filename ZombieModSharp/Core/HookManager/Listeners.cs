@@ -96,7 +96,7 @@ public class Listeners : IListeners, IClientListener, IGameListener, IEntityList
 
             if(sound.HasValue)
             {
-                _logger.LogInformation("Found one use it.");
+                // _logger.LogInformation("Found one use it.");
 
                 if(sound.Value)
                     PlayerManager.ClientSoundList.Add(client);
@@ -104,7 +104,7 @@ public class Listeners : IListeners, IClientListener, IGameListener, IEntityList
 
             else
             {
-                _logger.LogInformation("Not found insert use it.");
+                // _logger.LogInformation("Not found insert use it.");
                 PlayerManager.ClientSoundList.Add(client);
                 var success = await _sqlite.InsertPlayerSoundAsync(id, true);
             }
@@ -142,7 +142,7 @@ public class Listeners : IListeners, IClientListener, IGameListener, IEntityList
 
     public void OnResourcePrecache()
     {
-        _logger.LogInformation("Precache GoldShip Here");
+        // _logger.LogInformation("Precache GoldShip Here");
         //_modsharp.PrecacheResource("characters/models/oylsister/uma_musume/gold_ship/goldship2.vmdl");
         //_modsharp.PrecacheResource("characters/models/s2ze/zombie_frozen/zombie_frozen.vmdl");
         _precacheManager.PrecacheAllResource();

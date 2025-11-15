@@ -20,10 +20,11 @@ public class Infect : IInfect
     private readonly IModSharp _modSharp;
     private readonly IPlayerClasses _playerClasses;
     private readonly ICvarServices _cvarServices;
+    private readonly IZTele _ztele;
 
     private bool InfectStarted = false;
 
-    public Infect(ISharedSystem sharedSystem, ILogger<Infect> logger, IPlayerManager player, IPlayerClasses playerClasses, ICvarServices cvarServices)
+    public Infect(ISharedSystem sharedSystem, ILogger<Infect> logger, IPlayerManager player, IPlayerClasses playerClasses, ICvarServices cvarServices, IZTele zTele)
     {
         _sharedSystem = sharedSystem;
         _entityManager = _sharedSystem.GetEntityManager();
@@ -33,6 +34,7 @@ public class Infect : IInfect
         _modSharp = _sharedSystem.GetModSharp();
         _playerClasses = playerClasses;
         _cvarServices = cvarServices;
+        _ztele = zTele;
     }
 
     public void InfectPlayer(IGameClient client, IGameClient? attacker = null, bool motherzombie = false, bool force = false)
@@ -59,6 +61,12 @@ public class Infect : IInfect
         }
 
         clientController.SwitchTeam(CStrikeTeam.TE);
+
+        if(motherzombie)
+        {
+            if(_cvarServices.CvarList["Cvar_InfectMotherZombieSpawn"]?.GetBool() ?? false)
+                _ztele.TeleportToSpawn(client);
+        }
 
         // implement model changed and health.
         var pawn = clientController.GetPlayerPawn();

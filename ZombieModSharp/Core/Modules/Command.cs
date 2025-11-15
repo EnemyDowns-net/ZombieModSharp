@@ -18,8 +18,9 @@ public class Command : ICommand
     private readonly IModSharp _modsharp;
     private readonly ICommandManager _command;
     private readonly ISqliteDatabase _sqlite;
+    private readonly ICvarServices _cvarServices;
 
-    public Command(IPlayerManager player, IZTele ztele, IInfect infect, ISharedSystem sharedSystem, ICommandManager command, ISqliteDatabase sqlite)
+    public Command(IPlayerManager player, IZTele ztele, IInfect infect, ISharedSystem sharedSystem, ICommandManager command, ISqliteDatabase sqlite, ICvarServices cvarServices)
     {
         _player = player;
         _ztele = ztele;
@@ -28,6 +29,7 @@ public class Command : ICommand
         _modsharp = _sharedSystem.GetModSharp();
         _command = command;
         _sqlite = sqlite;
+        _cvarServices = cvarServices;
     }
 
     public void PostInit()
@@ -44,9 +46,31 @@ public class Command : ICommand
 
         if (client == null || playerInfo == null)
             return;
+        
+        var allow = _cvarServices.CvarList["Cvar_ZTeleAllow"]?.GetBool();
 
-        ReplyToCommand(client, "Teleport back to spawn.");
-        _ztele.TeleportToSpawn(client);
+        if(allow.HasValue && !allow.Value)
+        {
+            ReplyToCommand(client, "This feature is not available.");
+            return;
+        }
+
+        var delay = _cvarServices.CvarList["Cvar_ZTeleDelay"]?.GetFloat();
+
+        if(delay > 0)
+        {
+            ReplyToCommand(client, $"Teleport back to spawn in {delay} seconds.");
+            _modsharp.PushTimer(new Func<TimerAction>(() => 
+            {
+                _ztele.TeleportToSpawn(client);
+                return TimerAction.Continue;
+            }), delay.Value, GameTimerFlags.StopOnRoundEnd|GameTimerFlags.StopOnMapEnd);
+        }
+        else
+        {
+            ReplyToCommand(client, $"Teleport back to spawn in.");
+        }
+
         return;
     }
 
@@ -67,9 +91,11 @@ public class Command : ICommand
             return;
         }
 
+        var motherzombie = !_infect.IsInfectStarted();
+
         foreach (var player in target)
         {
-            _infect.InfectPlayer(player, null, false, true);
+            _infect.InfectPlayer(player, null, motherzombie, true);
             _modsharp.PrintChannelAll(HudPrintChannel.Chat, $"{ZombieModSharp.Prefix} Admin {client.Name} has infected {player.Name} via command");
         }
 
