@@ -1,9 +1,11 @@
+using Sharp.Extensions.CommandManager;
 using Sharp.Shared;
 using Sharp.Shared.Enums;
 using Sharp.Shared.Managers;
 using Sharp.Shared.Objects;
 using Sharp.Shared.Types;
 using ZombieModSharp.Abstractions;
+using ZombieModSharp.Abstractions.Storage;
 
 namespace ZombieModSharp.Core.Modules;
 
@@ -13,51 +15,47 @@ public class Command : ICommand
     private readonly IZTele _ztele;
     private readonly IInfect _infect;
     private readonly ISharedSystem _sharedSystem;
-    private readonly IClientManager _clientManager;
     private readonly IModSharp _modsharp;
+    private readonly ICommandManager _command;
+    private readonly ISqliteDatabase _sqlite;
 
-    public Command(IPlayerManager player, IZTele ztele, IInfect infect, ISharedSystem sharedSystem)
+    public Command(IPlayerManager player, IZTele ztele, IInfect infect, ISharedSystem sharedSystem, ICommandManager command, ISqliteDatabase sqlite)
     {
         _player = player;
         _ztele = ztele;
         _infect = infect;
         _sharedSystem = sharedSystem;
-        _clientManager = _sharedSystem.GetClientManager();
         _modsharp = _sharedSystem.GetModSharp();
+        _command = command;
+        _sqlite = sqlite;
     }
 
-    public void Init()
+    public void PostInit()
     {
-        _clientManager.InstallCommandCallback("ztele", ZTeleCommand);
-        _clientManager.InstallCommandCallback("infect", InfectCommand);
-        _clientManager.InstallCommandCallback("human", HumanizeCommand);
+        _command.RegisterClientCommand("ztele", ZTeleCommand);
+        _command.RegisterAdminCommand("infect", InfectCommand, "slay");
+        _command.RegisterAdminCommand("human", HumanizeCommand, "slay");
+        _command.RegisterClientCommand("zsound", ZSoundCommand);
     }
 
-    public void Shutdown()
-    {
-        _clientManager.RemoveCommandCallback("ztele", ZTeleCommand);
-        _clientManager.RemoveCommandCallback("infect", InfectCommand);
-        _clientManager.RemoveCommandCallback("human", HumanizeCommand);
-    }
-
-    private ECommandAction ZTeleCommand(IGameClient client, StringCommand command)
+    private void ZTeleCommand(IGameClient client, StringCommand command)
     {
         var playerInfo = _player.GetOrCreatePlayer(client);
 
         if (client == null || playerInfo == null)
-            return ECommandAction.Handled;
+            return;
 
         ReplyToCommand(client, "Teleport back to spawn.");
         _ztele.TeleportToSpawn(client);
-        return ECommandAction.Skipped;
+        return;
     }
 
-    private ECommandAction InfectCommand(IGameClient client, StringCommand command)
+    private void InfectCommand(IGameClient client, StringCommand command)
     {
         if (command.ArgCount < 1)
         {
             ReplyToCommand(client, "Usage: ms_infect <target>");
-            return ECommandAction.Stopped;
+            return;
         }
 
         var arg = command.GetArg(1);
@@ -66,24 +64,24 @@ public class Command : ICommand
         if (target == null || target.Count == 0)
         {
             ReplyToCommand(client, "No target is found");
-            return ECommandAction.Stopped;
+            return;
         }
 
         foreach (var player in target)
         {
             _infect.InfectPlayer(player, null, false, true);
-            _modsharp.PrintChannelAll(HudPrintChannel.Chat, $"Admin {client.Name} has infected {player.Name} via command");
+            _modsharp.PrintChannelAll(HudPrintChannel.Chat, $"{ZombieModSharp.Prefix} Admin {client.Name} has infected {player.Name} via command");
         }
 
-        return ECommandAction.Skipped;
+        return;
     }
 
-    private ECommandAction HumanizeCommand(IGameClient client, StringCommand command)
+    private void HumanizeCommand(IGameClient client, StringCommand command)
     {
         if (command.ArgCount < 1)
         {
-            ReplyToCommand(client, "Usage: ms_infect <target>");
-            return ECommandAction.Stopped;
+            ReplyToCommand(client, "Usage: ms_human <target>");
+            return;
         }
 
         var arg = command.GetArg(1);
@@ -92,16 +90,36 @@ public class Command : ICommand
         if (target == null || target.Count == 0)
         {
             ReplyToCommand(client, "No target is found");
-            return ECommandAction.Stopped;
+            return;
         }
 
         foreach (var player in target)
         {
             _infect.HumanizeClient(player, true);
-            _modsharp.PrintChannelAll(HudPrintChannel.Chat, $"Admin {client.Name} has revived {player.Name} via command");
+            _modsharp.PrintChannelAll(HudPrintChannel.Chat, $"{ZombieModSharp.Prefix} Admin {client.Name} has revived {player.Name} via command");
         }
 
-        return ECommandAction.Skipped;
+        return;
+    }
+
+    private void ZSoundCommand(IGameClient client, StringCommand command)
+    {
+        bool result = true;
+
+        if(PlayerManager.ClientSoundList.Contains(client))
+        {
+            result = false;
+            PlayerManager.ClientSoundList.Remove(client);
+        }
+
+        else
+            PlayerManager.ClientSoundList.Add(client);
+
+        // whatever happened here is we will need to insert it.
+        _modsharp.InvokeFrameActionAsync(async () => {
+            var success = await _sqlite.InsertPlayerSoundAsync(client.SteamId.ToString(), result);
+            ReplyToCommand(client, $"You have{(result ? "\x04 Enabled" : "\x04 Disabled")}\x01 zombie sound.");
+        });
     }
 
     private void ReplyToCommand(IGameClient client, string text)
@@ -115,7 +133,7 @@ public class Command : ICommand
         else
         {
             var receiver = new RecipientFilter(client.Slot);
-            _modsharp.PrintChannelFilter(HudPrintChannel.Chat, "Teleport back to spawn.", receiver);
+            _modsharp.PrintChannelFilter(HudPrintChannel.Chat, $"{ZombieModSharp.Prefix} {text}", receiver);
         }
     }
 

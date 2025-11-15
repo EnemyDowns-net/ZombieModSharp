@@ -94,11 +94,17 @@ public class Listeners : IListeners, IClientListener, IGameListener, IEntityList
             // this is sound part
             var sound = await _sqlite.GetPlayerSoundAsync(id);
 
-            if(sound.HasValue && sound.Value)
-                PlayerManager.ClientSoundList.Add(client);
+            if(sound.HasValue)
+            {
+                _logger.LogInformation("Found one use it.");
+
+                if(sound.Value)
+                    PlayerManager.ClientSoundList.Add(client);
+            }
 
             else
             {
+                _logger.LogInformation("Not found insert use it.");
                 PlayerManager.ClientSoundList.Add(client);
                 var success = await _sqlite.InsertPlayerSoundAsync(id, true);
             }
@@ -111,6 +117,7 @@ public class Listeners : IListeners, IClientListener, IGameListener, IEntityList
         if (client.IsHltv)
             return;
 
+        PlayerManager.ClientSoundList.Remove(client);
         _playerManager.RemovePlayer(client);
     }
 

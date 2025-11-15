@@ -54,9 +54,10 @@ public class Knockback : IKnockback
         var weaponknockback = _weapons.GetWeaponKnockback(weapon);
         var hitgroupsKnockback = _hitgroup.GetHitgroupKnockback(hitGroup);
 
-        // _modsharp.PrintToChatAll($"KB data: {weaponknockback:F2} | {hitgroupsKnockback:F2}");
+        // _modsharp.PrintToChatAll($"KB data: {weaponknockback:F2} | {hitgroupsKnockback:F2} | {classKnockback:F2}");
 
         var pushVelocity = foward * damage * classKnockback * weaponknockback * hitgroupsKnockback;
+        // _modsharp.PrintToChatAll($"Push Velocity: {pushVelocity}");
 
         var playerPawn = client.GetPlayerController()?.GetPlayerPawn();
 

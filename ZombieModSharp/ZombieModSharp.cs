@@ -2,7 +2,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using Sharp.Extensions.CommandManager;
 using Sharp.Shared;
+using Sharp.Shared.Abstractions;
 using ZombieModSharp.Abstractions;
 using ZombieModSharp.Abstractions.Storage;
 using ZombieModSharp.Core.Services;
@@ -61,6 +63,8 @@ public sealed class ZombieModSharp : IModSharpModule
         services.AddSingleton<ISqliteDatabase>(provider => 
             new SqliteDatabase($"Data Source={path}", provider.GetRequiredService<ILogger<SqliteDatabase>>()));
         
+        services.AddCommandManager(sharedSystem);
+
         // Register our services using the extension method
         services.AddZombieModSharpServices();
 
@@ -80,13 +84,15 @@ public sealed class ZombieModSharp : IModSharpModule
 
     public bool Init()
     {
+        // we need this for command extensions.
+        _serviceProvider.LoadAllSharpExtensions();
+
         _logger.LogInformation(
             "Oh wow, we seem to be crossing paths a lot lately... Where could I have seen you before? Can you figure it out?");
 
         _listeners.Init();
         _eventListener.Init();
         _hooks.Init();
-        _command.Init();
         _cvarManager.Init();
         _configs.Init();
 
@@ -101,11 +107,13 @@ public sealed class ZombieModSharp : IModSharpModule
 
     public void Shutdown()
     {
+        // yes this one too
+        _serviceProvider.ShutdownAllSharpExtensions();
+
         // _logger.LogInformation("See you around, Nameless~ Try to stay out of trouble, especially... the next time we meet!");
         _listeners.Shutdown();
         _eventListener.Shutdown();
         _hooks.Shutdown();
-        _command.Shutdown();
         _sqliteDatabase.Shutdown();
     }
 
@@ -113,6 +121,7 @@ public sealed class ZombieModSharp : IModSharpModule
     {
         // _logger.LogInformation("Why don't you stay and play for a while?");
         // _eventListener.RegisterEvents();
+        _command.PostInit();
     }
 
     public void OnAllModulesLoaded()

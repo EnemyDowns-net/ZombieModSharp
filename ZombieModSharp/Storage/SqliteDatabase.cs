@@ -83,7 +83,10 @@ public class SqliteDatabase : ISqliteDatabase
             new { PlayerAuth = playerAuth });
 
         if (id == null)
+        {
+            _logger.LogInformation("ID is null!");
             return false; // Player must exist in zs_playerclasses
+        }
 
         // 2. Insert or update zs_playersound
         var result = await _connection.ExecuteAsync(@"
@@ -91,6 +94,8 @@ public class SqliteDatabase : ISqliteDatabase
             VALUES (@Id, @SoundEnable)
             ON CONFLICT(Id) DO UPDATE SET sound_enable = @SoundEnable;",
             new { Id = id.Value, SoundEnable = enabled ? 1 : 0 });
+
+        _logger.LogInformation("Try to insert {id} as {bool}", id.Value, enabled);
 
         return result > 0;
     }
