@@ -6,6 +6,7 @@ using Sharp.Shared.Listeners;
 using Sharp.Shared.Objects;
 using ZombieModSharp.Abstractions;
 using ZombieModSharp.Abstractions.Storage;
+using ZombieModSharp.Core.Modules;
 
 namespace ZombieModSharp.Core.HookManager;
 
@@ -60,7 +61,9 @@ public class Listeners : IListeners, IClientListener, IGameListener, IEntityList
         string humanClass = string.Empty;
         string zombieClass = string.Empty;
 
-        _modsharp.InvokeFrameActionAsync(async () => {
+        _modsharp.InvokeFrameActionAsync(async () => 
+        {
+            // this is the part of Player classes
             var classes = await _sqlite.GetPlayerClassesAsync(id);
 
             if (classes == null)
@@ -73,7 +76,7 @@ public class Listeners : IListeners, IClientListener, IGameListener, IEntityList
                 // _logger.LogInformation("Try insert {human} | {zombie}", humanClass, zombieClass);
 
                 var insertResult = await _sqlite.InsertPlayerClassesAsync(id, humanClass, zombieClass);
-                _logger.LogInformation("Insert result for {SteamId}: {Result}", id, insertResult);
+                //_logger.LogInformation("Insert result for {SteamId}: {Result}", id, insertResult);
             }
             else
             {
@@ -87,6 +90,18 @@ public class Listeners : IListeners, IClientListener, IGameListener, IEntityList
 
             player.HumanClass = _playerClasses.GetClassByName(humanClass);
             player.ZombieClass = _playerClasses.GetClassByName(zombieClass);
+
+            // this is sound part
+            var sound = await _sqlite.GetPlayerSoundAsync(id);
+
+            if(sound.HasValue && sound.Value)
+                PlayerManager.ClientSoundList.Add(client);
+
+            else
+            {
+                PlayerManager.ClientSoundList.Add(client);
+                var success = await _sqlite.InsertPlayerSoundAsync(id, true);
+            }
         });
     }
 

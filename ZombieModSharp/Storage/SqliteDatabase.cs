@@ -33,6 +33,18 @@ public class SqliteDatabase : ISqliteDatabase
                 human_class TEXT NOT NULL,
                 zombie_class TEXT NOT NULL
             );");
+
+        await _connection.ExecuteAsync(@"
+            CREATE TABLE IF NOT EXISTS zs_playersound (
+                Id INTEGER PRIMARY KEY,
+                sound_enable INTEGER NOT NULL,
+                FOREIGN KEY(Id) REFERENCES zs_playerclasses(Id) ON DELETE CASCADE
+            );");
+    }
+
+    public void Shutdown()
+    {
+        _connection.Close();
     }
 
     public async Task<bool> InsertPlayerClassesAsync(string playerAuth, string humanClass, string zombieClass)
@@ -61,5 +73,38 @@ public class SqliteDatabase : ISqliteDatabase
             new { PlayerAuth = playerAuth });
 
         return classes;
+    }
+
+    public async Task<bool> InsertPlayerSoundAsync(string playerAuth, bool enabled)
+    {
+        // 1. Get the Id from zs_playerclasses
+        var id = await _connection.QueryFirstOrDefaultAsync<int?>(@"
+            SELECT Id FROM zs_playerclasses WHERE player_auth = @PlayerAuth;",
+            new { PlayerAuth = playerAuth });
+
+        if (id == null)
+            return false; // Player must exist in zs_playerclasses
+
+        // 2. Insert or update zs_playersound
+        var result = await _connection.ExecuteAsync(@"
+            INSERT INTO zs_playersound (Id, sound_enable)
+            VALUES (@Id, @SoundEnable)
+            ON CONFLICT(Id) DO UPDATE SET sound_enable = @SoundEnable;",
+            new { Id = id.Value, SoundEnable = enabled ? 1 : 0 });
+
+        return result > 0;
+    }
+
+    public async Task<bool?> GetPlayerSoundAsync(string playerAuth)
+    {
+        var enabled = await _connection.QueryFirstOrDefaultAsync<bool?>(@"
+            SELECT s.sound_enable 
+            FROM zs_playersound s
+            JOIN zs_playerclasses c ON s.Id = c.Id
+            WHERE c.player_auth = @PlayerAuth;",
+            new { PlayerAuth = playerAuth }
+        );
+
+        return enabled;
     }
 }

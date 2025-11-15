@@ -8,6 +8,4 @@ public interface IPlayerManager
     public Player GetOrCreatePlayer(IGameClient client);
     public Dictionary<IGameClient, Player> GetAllPlayers();
     public void RemovePlayer(IGameClient client);
-    public bool IsClientInfected(IGameClient client);
-    public bool IsClientHuman(IGameClient client);
 }

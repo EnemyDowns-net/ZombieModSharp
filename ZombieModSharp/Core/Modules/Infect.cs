@@ -67,7 +67,7 @@ public class Infect : IInfect
             return;
         }
         
-        pawn.EmitSound("zr.amb.scream", 1.0f, new RecipientFilter(_player.GetAllPlayers().Keys));
+        pawn.EmitSound("zr.amb.scream", 1.0f, new RecipientFilter(PlayerManager.ClientSoundList));
         _modSharp.PrintChannelFilter(HudPrintChannel.Chat, $"{ZombieModSharp.Prefix} You have been infected! Go pass it on to as many other players as you can.", new RecipientFilter(client));
 
         _playerClasses.ApplyPlayerClassAttribute(pawn, zmPlayer.ZombieClass!);

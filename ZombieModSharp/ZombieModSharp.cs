@@ -106,6 +106,7 @@ public sealed class ZombieModSharp : IModSharpModule
         _eventListener.Shutdown();
         _hooks.Shutdown();
         _command.Shutdown();
+        _sqliteDatabase.Shutdown();
     }
 
     public void PostInit()

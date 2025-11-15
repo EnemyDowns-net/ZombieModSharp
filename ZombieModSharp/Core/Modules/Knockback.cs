@@ -32,8 +32,11 @@ public class Knockback : IKnockback
         if (client == null || attacker == null)
             return;
 
+        var clientPlayer = _player.GetOrCreatePlayer(client);
+        var attackerPlayer = _player.GetOrCreatePlayer(attacker);
+            
         // knockback is for zombie only.
-        if (!_player.IsClientHuman(attacker) || !_player.IsClientInfected(client))
+        if (!attackerPlayer.IsHuman() || !clientPlayer.IsInfected())
             return;
 
         var attackerPawn = attacker.GetPlayerController()?.GetPlayerPawn();

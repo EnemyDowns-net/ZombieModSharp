@@ -44,10 +44,10 @@ public class Hooks : IHooks
         //var isInfected = _player.IsClientInfected(player);
         //_modsharp.PrintChannelAll(HudPrintChannel.Chat, $"Zombie Status: {isInfected}");
         // just in case.
-        _player.GetOrCreatePlayer(player);
+        var client = _player.GetOrCreatePlayer(player);
 
         // if player is infect and weapon is knife then ignore all of it.
-        if (_player.IsClientInfected(player) && !weapon.IsKnife)
+        if (client.IsInfected() && !weapon.IsKnife)
         {
             //_modsharp.PrintChannelAll(HudPrintChannel.Chat, $"This is {EHookAction.SkipCallReturnOverride} and {result.ReturnValue}");
             return new HookReturnValue<bool>(EHookAction.SkipCallReturnOverride, false);

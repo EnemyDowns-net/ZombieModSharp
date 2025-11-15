@@ -8,6 +8,7 @@ namespace ZombieModSharp.Core.Modules;
 public class PlayerManager : IPlayerManager
 {
     private Dictionary<IGameClient, Player> _players { get; set; } = new();
+    public static List<IGameClient> ClientSoundList = [];
 
     public PlayerManager()
     {
@@ -34,16 +35,6 @@ public class PlayerManager : IPlayerManager
     public void RemovePlayer(IGameClient client)
     {
         _players.Remove(client);
-    }
-
-    public bool IsClientInfected(IGameClient client)
-    {
-        return _players[client].IsZombie;
-    }
-
-    public bool IsClientHuman(IGameClient client)
-    {
-        return !_players[client].IsZombie;
     }
 
     public void GetPlayerClassesData(IGameClient client)
