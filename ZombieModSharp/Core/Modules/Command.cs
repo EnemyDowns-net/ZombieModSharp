@@ -197,7 +197,7 @@ public class Command : ICommand
         }
         else if (string.Equals(target, "@bot", StringComparison.OrdinalIgnoreCase))
         {
-            targets.AddRange(_player.GetAllPlayers().Where(p => p.Key.IsFakeClient).Select(p => p.Key));
+            targets.AddRange(_player.GetAllPlayers().Where(p => p.Key.IsFakeClient && !p.Key.IsHltv).Select(p => p.Key));
         }
 
         // find the name of 
