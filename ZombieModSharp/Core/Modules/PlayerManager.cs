@@ -69,6 +69,6 @@ public class Player
     // sound section.
     public bool SoundEnabled { get; set; }
     public float SoundVolume { get; set; } = 100.0f;
-    public float ZombieMoanCooldown { get; set; }
-    public float ZombiePainCooldown { get; set; }
+    public Guid MoanTimer { get; set; }
+    public float ZombiePainTime { get; set; }
 }

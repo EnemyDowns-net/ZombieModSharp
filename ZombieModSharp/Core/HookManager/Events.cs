@@ -22,13 +22,14 @@ public class Events : IEvents, IEventListener
     private readonly IZTele _ztele;
     private readonly IKnockback _knockback;
     private readonly ICvarServices _cvarServices;
+    private readonly ISoundServices _soundServices;
 
     public int ListenerVersion => IEventListener.ApiVersion;
     public int ListenerPriority => 0;
 
     public bool RoundEnded { get; private set; } = false;
 
-    public Events(ISharedSystem sharedSystem, ILogger<Events> logger, IPlayerManager player, IInfect infect, IZTele ztele, IKnockback knockback, ICvarServices cvarServices)
+    public Events(ISharedSystem sharedSystem, ILogger<Events> logger, IPlayerManager player, IInfect infect, IZTele ztele, IKnockback knockback, ICvarServices cvarServices, ISoundServices soundServices)
     {
         _sharedSystem = sharedSystem;
         _eventManager = _sharedSystem.GetEventManager();
@@ -40,6 +41,7 @@ public class Events : IEvents, IEventListener
         _ztele = ztele;
         _knockback = knockback;
         _cvarServices = cvarServices;
+        _soundServices = soundServices;
     }
 
     public void Init()
@@ -132,20 +134,31 @@ public class Events : IEvents, IEventListener
             // Get weapon and calculate damage and knockback.
             var damage = e.GetInt("dmg_health");
             var hitGroup = e.GetInt("hitgroup");
-            _knockback.KnockbackClient(client, attackerClient, weapon, damage, hitGroup);
+            var pawn = client.GetPlayerController()?.GetPlayerPawn();
+
+            if(pawn != null)
+            {
+                _soundServices.ZombieHurtSound(pawn);
+                _knockback.KnockbackClient(client, attackerClient, weapon, damage, hitGroup);
+            }
         }
     }
 
     private void OnPlayerDeath(IGameEvent e)
     {
         //_infect.CheckGameStatus();
+        var client = e.GetPlayerController("userid")?.GetGameClient();
 
-        var userId = new UserID((ushort)e.GetInt("userid"));
-        var client = _clientManager.GetGameClient(userId);
+        if(client == null)
+            return;
 
-        var attackerId = new UserID((ushort)e.GetInt("attacker"));
-        var attackerClient = _clientManager.GetGameClient(attackerId);
+        if(_player.GetOrCreatePlayer(client).IsInfected())
+        {
+            var pawn = e.GetPlayerController("userid")?.GetPlayerPawn();
 
+            if(pawn != null)
+                _soundServices.EmitZombieSound(pawn, "zr.amb.zombie_die");
+        }
         //_modSharp.PrintChannelAll(HudPrintChannel.Chat, $"Client {client?.Name ?? "Unknown Player"} killed by {attackerClient?.Name ?? "Unknown Player"}");
     }
 

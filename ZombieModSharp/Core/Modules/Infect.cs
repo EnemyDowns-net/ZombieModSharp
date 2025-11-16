@@ -113,6 +113,7 @@ public class Infect : IInfect
         if (attacker == null)
             return;
 
+        _soundServices.ZombieMoan(pawn);
         CheckGameStatus();
 
         // Fire fake event here.
