@@ -130,21 +130,22 @@ public class Command : ICommand
 
     private void ZSoundCommand(IGameClient client, StringCommand command)
     {
-        bool result = true;
+        var player = _player.GetOrCreatePlayer(client);
+        var arg = command.GetArg(1);
 
-        if(PlayerManager.ClientSoundList.Contains(client))
+        // we need to check if arg is number or not.
+        if(!float.TryParse(arg, out var volume))
         {
-            result = false;
-            PlayerManager.ClientSoundList.Remove(client);
+            // we just keep the same value.
+            volume = player.SoundVolume;
         }
 
-        else
-            PlayerManager.ClientSoundList.Add(client);
+        player.SoundEnabled = !player.SoundEnabled;
 
         // whatever happened here is we will need to insert it.
         _modsharp.InvokeFrameActionAsync(async () => {
-            var success = await _sqlite.InsertPlayerSoundAsync(client.SteamId.ToString(), result);
-            ReplyToCommand(client, $"You have{(result ? "\x04 Enabled" : "\x04 Disabled")}\x01 zombie sound.");
+            var success = await _sqlite.InsertPlayerSoundAsync(client.SteamId.ToString(), player.SoundEnabled, volume);
+            ReplyToCommand(client, $"You have{(player.SoundEnabled ? "\x04 Enabled" : "\x04 Disabled")}\x01 zombie sound. {(player.SoundEnabled ? $"And set volume to {(int)player.SoundVolume}" : string.Empty)}");
         });
     }
 

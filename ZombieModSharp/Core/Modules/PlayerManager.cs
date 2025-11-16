@@ -9,7 +9,6 @@ namespace ZombieModSharp.Core.Modules;
 public class PlayerManager : IPlayerManager
 {
     private Dictionary<IGameClient, Player> _players { get; set; } = new();
-    public static List<IGameClient> ClientSoundList = [];
 
     public PlayerManager()
     {

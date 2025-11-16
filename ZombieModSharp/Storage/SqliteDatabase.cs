@@ -38,6 +38,7 @@ public class SqliteDatabase : ISqliteDatabase
             CREATE TABLE IF NOT EXISTS zs_playersound (
                 Id INTEGER PRIMARY KEY,
                 sound_enable INTEGER NOT NULL,
+                volume FLOAT NOT NULL DEFAULT 100.0,
                 FOREIGN KEY(Id) REFERENCES zs_playerclasses(Id) ON DELETE CASCADE
             );");
     }
@@ -75,7 +76,7 @@ public class SqliteDatabase : ISqliteDatabase
         return classes;
     }
 
-    public async Task<bool> InsertPlayerSoundAsync(string playerAuth, bool enabled)
+    public async Task<bool> InsertPlayerSoundAsync(string playerAuth, bool enabled, float volume = 100.0f)
     {
         // 1. Get the Id from zs_playerclasses
         var id = await _connection.QueryFirstOrDefaultAsync<int?>(@"
@@ -90,26 +91,31 @@ public class SqliteDatabase : ISqliteDatabase
 
         // 2. Insert or update zs_playersound
         var result = await _connection.ExecuteAsync(@"
-            INSERT INTO zs_playersound (Id, sound_enable)
-            VALUES (@Id, @SoundEnable)
-            ON CONFLICT(Id) DO UPDATE SET sound_enable = @SoundEnable;",
-            new { Id = id.Value, SoundEnable = enabled ? 1 : 0 });
+            INSERT INTO zs_playersound (Id, sound_enable, volume)
+            VALUES (@Id, @SoundEnable, @Volume)
+            ON CONFLICT(Id) DO UPDATE SET sound_enable = @SoundEnable, volume = @Volume;",
+            new { Id = id.Value, SoundEnable = enabled ? 1 : 0, Volume = volume });
 
-        _logger.LogInformation("Try to insert {id} as {bool}", id.Value, enabled);
+        // _logger.LogInformation("Try to insert {id} as {bool}", id.Value, enabled);
 
         return result > 0;
     }
 
-    public async Task<bool?> GetPlayerSoundAsync(string playerAuth)
+    public async Task<SavedSound> GetPlayerSoundAsync(string playerAuth)
     {
-        var enabled = await _connection.QueryFirstOrDefaultAsync<bool?>(@"
-            SELECT s.sound_enable 
+        var result = await _connection.QueryFirstOrDefaultAsync<SavedSound>(@"
+            SELECT s.sound_enable AS Enabled, s.volume AS Volume 
             FROM zs_playersound s
             JOIN zs_playerclasses c ON s.Id = c.Id
             WHERE c.player_auth = @PlayerAuth;",
             new { PlayerAuth = playerAuth }
         );
 
-        return enabled;
+        if (result == null)
+        {
+            return new SavedSound();
+        }
+
+        return result;
     }
 }
