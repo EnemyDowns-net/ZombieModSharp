@@ -1,3 +1,4 @@
+using Sharp.Shared.GameEntities;
 using Sharp.Shared.Objects;
 using ZombieModSharp.Core.Modules;
 

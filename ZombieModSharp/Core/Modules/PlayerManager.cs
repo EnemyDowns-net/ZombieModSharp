@@ -1,3 +1,4 @@
+using Sharp.Shared.GameEntities;
 using Sharp.Shared.Objects;
 using Sharp.Shared.Types;
 using ZombieModSharp.Abstractions;
@@ -36,11 +37,6 @@ public class PlayerManager : IPlayerManager
     {
         _players.Remove(client);
     }
-
-    public void GetPlayerClassesData(IGameClient client)
-    {
-        var player = GetOrCreatePlayer(client);
-    }
 }
 
 // Enhanced ZMPlayer class with all the merged functionality
@@ -69,4 +65,10 @@ public class Player
     // Convenience methods
     public bool IsHuman() => !IsZombie;
     public bool IsInfected() => IsZombie;
+
+    // sound section.
+    public bool SoundEnabled { get; set; }
+    public float SoundVolume { get; set; } = 100.0f;
+    public float ZombieMoanCooldown { get; set; }
+    public float ZombiePainCooldown { get; set; }
 }

@@ -20,11 +20,12 @@ public class Infect : IInfect
     private readonly IModSharp _modSharp;
     private readonly IPlayerClasses _playerClasses;
     private readonly ICvarServices _cvarServices;
+    private readonly ISoundServices _soundServices;
     private readonly IZTele _ztele;
 
     private bool InfectStarted = false;
 
-    public Infect(ISharedSystem sharedSystem, ILogger<Infect> logger, IPlayerManager player, IPlayerClasses playerClasses, ICvarServices cvarServices, IZTele zTele)
+    public Infect(ISharedSystem sharedSystem, ILogger<Infect> logger, IPlayerManager player, IPlayerClasses playerClasses, ICvarServices cvarServices, ISoundServices soundServices, IZTele zTele)
     {
         _sharedSystem = sharedSystem;
         _entityManager = _sharedSystem.GetEntityManager();
@@ -34,6 +35,7 @@ public class Infect : IInfect
         _modSharp = _sharedSystem.GetModSharp();
         _playerClasses = playerClasses;
         _cvarServices = cvarServices;
+        _soundServices = soundServices;
         _ztele = zTele;
     }
 
@@ -77,7 +79,7 @@ public class Infect : IInfect
             return;
         }
         
-        pawn.EmitSound("zr.amb.scream", 1.0f, new RecipientFilter(PlayerManager.ClientSoundList));
+        _soundServices.EmitZombieSound(pawn, "zr.amb.scream");
         _modSharp.PrintChannelFilter(HudPrintChannel.Chat, $"{ZombieModSharp.Prefix} You have been infected! Go pass it on to as many other players as you can.", new RecipientFilter(client));
 
         _playerClasses.ApplyPlayerClassAttribute(pawn, zmPlayer.ZombieClass!);
