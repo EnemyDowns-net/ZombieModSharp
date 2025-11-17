@@ -324,11 +324,12 @@ public class Infect : IInfect
         var candidate = _player.GetAllPlayers().Where(p => p.Value.MotherZombieStatus == MotherZombieStatus.None
             && (p.Key.GetPlayerController()?.IsAlive ?? false));
 
+        // we could just use all player and count them but this sometime unfair for player who has to fight for spectator
         var totalPlayer = _player.GetAllPlayers().Where(p => p.Key.GetPlayerController()?.IsAlive ?? false).Count();
 
-        // Calculate
+        // 63 / 7 = 9 zombies
         var ratio = _cvarServices.CvarList["Cvar_InfectMotherZombieRatio"]?.GetFloat() ?? 7.0f;
-        var requireZm = totalPlayer / ratio;
+        int requireZm = (int)Math.Round(totalPlayer / ratio);
 
         // if zombie is less than 0 then make one.
         if (requireZm <= 0)
@@ -336,22 +337,25 @@ public class Infect : IInfect
 
         int made = 0;
 
-        // this part is mother zombie reset
+        // this part is mother zombie reset, if candidate is less than zombie requirement.
         if (requireZm > candidate.Count())
         {
             // if any candidate left here.
             if (candidate.Any())
             {
-                // we just confirm their infection right the way.
+                // we made them motherzombie right the way.
                 foreach (var player in candidate)
                 {
+                    // we count how many mother zombie is made.
                     made++;
                     InfectPlayer(player.Key, null, true, false);
+
+                    // chosen for this round.
                     player.Value.MotherZombieStatus = MotherZombieStatus.Chosen;
                 }
             }
 
-            // reset status
+            // at the end of the round chosen mother zombie will get reset to Last. so we reset it.
             foreach (var player in _player.GetAllPlayers().Where(p => p.Value.MotherZombieStatus == MotherZombieStatus.Last))
             {
                 player.Value.MotherZombieStatus = MotherZombieStatus.None;
@@ -361,16 +365,20 @@ public class Infect : IInfect
             candidate = _player.GetAllPlayers().Where(p => p.Value.MotherZombieStatus == MotherZombieStatus.None
                 && (p.Key.GetPlayerController()?.IsAlive ?? false));
 
+            // tell them that we have reset cycle.
             _modSharp.PrintChannelAll(HudPrintChannel.Chat, $"{ZombieModSharp.Prefix} Mother Zombie has been reset.");
         }
 
+        // now in this case if mother zombie is enough from reset cycle, then we should just stop.
         if (requireZm - made <= 0)
             return;
 
+        // random and shuffle them
         var random = new Random();
         var shuffledCandidates = candidate.OrderBy(x => random.Next()).ToList();
-        var selectedMotherZombies = shuffledCandidates.Take((int)Math.Floor(requireZm) - made);
+        var selectedMotherZombies = shuffledCandidates.Take(requireZm - made); // take from the started. and it should deducted with already made zombie count.
 
+        // loop again.
         foreach (var player in selectedMotherZombies)
         {
             InfectPlayer(player.Key, null, true, false);
