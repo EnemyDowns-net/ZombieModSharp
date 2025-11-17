@@ -5,6 +5,7 @@ using Sharp.Shared.GameEntities;
 using Sharp.Shared.Listeners;
 using Sharp.Shared.Objects;
 using ZombieModSharp.Abstractions;
+using ZombieModSharp.Abstractions.Entities;
 using ZombieModSharp.Abstractions.Storage;
 using ZombieModSharp.Core.Modules;
 
@@ -93,6 +94,12 @@ public class Listeners : IListeners, IClientListener, IGameListener, IEntityList
 
             // this is sound part
             var sound = await _sqlite.GetPlayerSoundAsync(id);
+
+            if(sound == null)
+            {
+                sound = new SavedSound();
+                await _sqlite.InsertPlayerSoundAsync(id, true);
+            }
 
             player.SoundEnabled = sound.Enabled;
             player.SoundVolume = sound.Volume;

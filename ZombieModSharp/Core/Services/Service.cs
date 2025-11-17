@@ -22,7 +22,9 @@ public static class ServiceCollectionExtensions
             .AddSingleton<IHitGroup, HitGroup>()
             .AddSingleton<ICvarServices, CvarServices>()
             .AddSingleton<IPlayerClasses, PlayerClasses>()
-            .AddSingleton<IPrecacheManager, PrecacheManager>();
+            .AddSingleton<IPrecacheManager, PrecacheManager>()
+            .AddSingleton<ISoundServices, SoundServices>();
+
         return services;
     }
 }

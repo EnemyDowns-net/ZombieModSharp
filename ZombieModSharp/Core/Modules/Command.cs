@@ -131,16 +131,33 @@ public class Command : ICommand
     private void ZSoundCommand(IGameClient client, StringCommand command)
     {
         var player = _player.GetOrCreatePlayer(client);
-        var arg = command.GetArg(1);
+        float volume = 100.0f;
 
-        // we need to check if arg is number or not.
-        if(!float.TryParse(arg, out var volume))
+        if(command.ArgCount < 1)
         {
-            // we just keep the same value.
-            volume = player.SoundVolume;
+            player.SoundEnabled = !player.SoundEnabled;
+            _modsharp.PrintToChatAll("This shit is not even one");
         }
 
-        player.SoundEnabled = !player.SoundEnabled;
+        else
+        {
+            var arg = command.GetArg(1);
+
+            // we need to check if arg is number or not.
+            if(!float.TryParse(arg, out volume))
+            {
+                // we just keep the same value.
+                volume = player.SoundVolume;
+            }
+
+            if(volume < 0 || volume > 100)
+            {
+                ReplyToCommand(client, $"Usage: ms_zsound <0-100>");
+                return;
+            }
+
+            player.SoundVolume = volume;
+        }
 
         // whatever happened here is we will need to insert it.
         _modsharp.InvokeFrameActionAsync(async () => {
