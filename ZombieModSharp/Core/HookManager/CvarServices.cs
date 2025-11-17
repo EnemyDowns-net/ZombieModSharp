@@ -33,6 +33,11 @@ public class CvarServices : ICvarServices
         CvarList["Cvar_InfectMinimumZombie"] = conVar.CreateConVar("zms_infect_minimum_zombie", 1, "Minimum zombie to spawn on first infection.", ConVarFlags.Release); 
         CvarList["Cvar_InfectNoblockEnable"] =  conVar.CreateConVar("zms_infect_noblock_enable", true, "Enable noblock between player or not.", ConVarFlags.Release);
         CvarList["Cvar_InfectMotherZombieSpawn"] = conVar.CreateConVar("zms_infect_motherzombie_spawn", true, "Teleport motherzombie back to spawn.", ConVarFlags.Release);
+
+        CvarList["Cvar_RespawnEnabled"] = conVar.CreateConVar("zms_respawn_enabled", true, "Enable respawn during the round.", ConVarFlags.Release);
+        CvarList["Cvar_RespawnDelay"] = conVar.CreateConVar("zms_respawn_delay", 5.0f, "Respawn Delay timer after death.", ConVarFlags.Release);
+        CvarList["Cvar_RespawnLateJoin"] = conVar.CreateConVar("zms_respawn_late_join", true, "Allow player to join during the round.", ConVarFlags.Release);
+        CvarList["Cvar_RespawnTeam"] = conVar.CreateConVar("zms_respawn_team", 0, "Respawn Team [0 = Zombie|1 = Human]", ConVarFlags.Release);
         
         CvarList["Cvar_ZTeleAllow"] = conVar.CreateConVar("zms_ztele_allow", true, "Allow Ztele command or not", ConVarFlags.Release);
         CvarList["Cvar_ZTeleDelay"] = conVar.CreateConVar("zms_ztele_delay", 5.0f, "Delay timer before player can get teleported with ztele command", ConVarFlags.Release);
