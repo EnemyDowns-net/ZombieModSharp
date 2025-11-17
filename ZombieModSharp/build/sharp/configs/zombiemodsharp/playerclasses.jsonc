@@ -6,7 +6,7 @@
         "Model": "characters/models/s2ze/zombie_frozen/zombie_frozen.vmdl",
         "Health": 8000,
         "Knockback": 0.0,
-        "Speed": 300.0
+        "Speed": 250.0
     },
     "human_default": {
         "Name": "Human Default",
@@ -15,6 +15,6 @@
         "Model": "characters/models/oylsister/uma_musume/gold_ship/goldship2.vmdl",
         "Health": 100,
         "Knockback": 3.0,
-        "Speed": 300.0
+        "Speed": 250.0
     }
 }

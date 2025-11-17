@@ -14,7 +14,7 @@ public class ClassAttribute
     public string Model { get; set; } = "default";
     public int Health { get; set; } = 100;
     public float Knockback { get; set; } = 3.0f;
-    public float Speed { get; set; } = 300f;
+    public float Speed { get; set; } = 250f;
 }
 
 public class PlayerClasses : IPlayerClasses
