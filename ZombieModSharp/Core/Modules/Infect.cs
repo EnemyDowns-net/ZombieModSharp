@@ -206,6 +206,11 @@ public class Infect : IInfect
 
     public void OnRoundFreezeEnd()
     {
+        if(_modSharp.GetGameRules().IsWarmupPeriod && (!_cvarServices.CvarList["Cvar_InfectWarmupEnabled"]?.GetBool() ?? false))
+        {
+            return;
+        }
+
         // start countdown.
         InitialCountDown();
         //_modSharp.PrintChannelAll(HudPrintChannel.Chat, "Infect round freeze is called");

@@ -15,6 +15,8 @@ public class Knockback : IKnockback
     private readonly IHitGroup _hitgroup;
     private readonly IModSharp _modsharp;
 
+    private float KnockbackScale = 1.0f;
+
     public Knockback(ISharedSystem sharedSystem, ILogger<Knockback> logger, IPlayerManager player, IWeapons weapons, IHitGroup hitGroup)
     {
         _sharedSystem = sharedSystem;
@@ -73,7 +75,7 @@ public class Knockback : IKnockback
 
         // _modsharp.PrintToChatAll($"KB data: {weaponknockback:F2} | {hitgroupsKnockback:F2} | {classKnockback:F2}");
 
-        var pushVelocity = foward * damage * classKnockback * weaponknockback * hitgroupsKnockback;
+        var pushVelocity = foward * damage * classKnockback * weaponknockback * hitgroupsKnockback * KnockbackScale;
         // _modsharp.PrintToChatAll($"Push Velocity: {pushVelocity}");
 
         var playerPawn = client.GetPlayerController()?.GetPlayerPawn();
@@ -83,5 +85,14 @@ public class Knockback : IKnockback
 
         var veloCity = playerPawn.GetAbsVelocity();
         playerPawn.Teleport(null, null, veloCity + pushVelocity);
+    }
+
+    public void SetKnockbackScale(float scale)
+    {
+        if(scale < 0)
+        {
+            KnockbackScale = 1.0f;
+            return;
+        }
     }
 }

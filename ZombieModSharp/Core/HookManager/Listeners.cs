@@ -141,4 +141,15 @@ public class Listeners : IListeners, IClientListener, IGameListener, IEntityList
         //_modsharp.PrecacheResource("characters/models/s2ze/zombie_frozen/zombie_frozen.vmdl");
         _precacheManager.PrecacheAllResource();
     }
+
+    public void OnGameInit()
+    {
+        // get map name
+        var mapname = _modsharp.GetMapName();
+
+        if(!string.IsNullOrEmpty(mapname))
+        {
+            _modsharp.ServerCommand($"exec zombiemodsharp/{mapname}.cfg");
+        }
+    }
 }

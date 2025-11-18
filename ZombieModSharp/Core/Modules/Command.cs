@@ -82,6 +82,12 @@ public class Command : ICommand
             return;
         }
 
+        if(_modsharp.GetGameRules().IsWarmupPeriod && (!_cvarServices.CvarList["Cvar_InfectWarmupEnabled"]?.GetBool() ?? false))
+        {
+            ReplyToCommand(client, "The infection during the warmup is not available.");
+            return;
+        }
+
         var arg = command.GetArg(1);
         var target = GetTargets(client, arg);
 
