@@ -23,7 +23,8 @@ public static class ServiceCollectionExtensions
             .AddSingleton<ICvarServices, CvarServices>()
             .AddSingleton<IPlayerClasses, PlayerClasses>()
             .AddSingleton<IPrecacheManager, PrecacheManager>()
-            .AddSingleton<ISoundServices, SoundServices>();
+            .AddSingleton<ISoundServices, SoundServices>()
+            .AddSingleton<IRespawnServices, RespawnServices>();
 
         return services;
     }

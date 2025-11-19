@@ -27,7 +27,7 @@ public sealed class ZombieModSharp : IModSharpModule
     private readonly IHooks _hooks;
     private readonly IConfigs _configs;
     private readonly ISqliteDatabase _sqliteDatabase;
-    private readonly ICvarServices _cvarManager;
+    private readonly ICvarServices _cvarServices;
 
     public static string Prefix { get; } = " \x04[Z:MS]\x01";
 
@@ -79,7 +79,7 @@ public sealed class ZombieModSharp : IModSharpModule
         _command = _serviceProvider.GetRequiredService<ICommand>();
         _hooks = _serviceProvider.GetRequiredService<IHooks>();
         _configs = _serviceProvider.GetRequiredService<IConfigs>();
-        _cvarManager = _serviceProvider.GetRequiredService<ICvarServices>();
+        _cvarServices = _serviceProvider.GetRequiredService<ICvarServices>();
     }
 
     public bool Init()
@@ -93,7 +93,7 @@ public sealed class ZombieModSharp : IModSharpModule
         _listeners.Init();
         _eventListener.Init();
         _hooks.Init();
-        _cvarManager.Init();
+        _cvarServices.Init();
         _configs.Init();
 
         var _gamedata = _sharedSystem.GetModSharp().GetGameData();
@@ -115,6 +115,7 @@ public sealed class ZombieModSharp : IModSharpModule
         _eventListener.Shutdown();
         _hooks.Shutdown();
         _sqliteDatabase.Shutdown();
+        _cvarServices.Shutdown();
     }
 
     public void PostInit()

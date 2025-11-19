@@ -15,33 +15,33 @@ public class Events : IEvents, IEventListener
     private readonly ISharedSystem _sharedSystem;
     private readonly IEventManager _eventManager;
     private readonly ILogger<Events> _logger;
-    private readonly IClientManager _clientManager;
-    private readonly IPlayerManager _player;
+    private readonly IPlayerManager _playerManager;
     private readonly IInfect _infect;
     private readonly IModSharp _modSharp;
     private readonly IZTele _ztele;
     private readonly IKnockback _knockback;
     private readonly ICvarServices _cvarServices;
     private readonly ISoundServices _soundServices;
+    private readonly IRespawnServices _respawnServices;
 
     public int ListenerVersion => IEventListener.ApiVersion;
     public int ListenerPriority => 0;
 
     public bool RoundEnded { get; private set; } = false;
 
-    public Events(ISharedSystem sharedSystem, ILogger<Events> logger, IPlayerManager player, IInfect infect, IZTele ztele, IKnockback knockback, ICvarServices cvarServices, ISoundServices soundServices)
+    public Events(ISharedSystem sharedSystem, ILogger<Events> logger, IPlayerManager playerManager, IInfect infect, IZTele ztele, IKnockback knockback, ICvarServices cvarServices, ISoundServices soundServices, IRespawnServices respawnServices)
     {
         _sharedSystem = sharedSystem;
         _eventManager = _sharedSystem.GetEventManager();
         _logger = logger;
-        _clientManager = _sharedSystem.GetClientManager();
-        _player = player;
+        _playerManager = playerManager;
         _modSharp = _sharedSystem.GetModSharp();
         _infect = infect;
         _ztele = ztele;
         _knockback = knockback;
         _cvarServices = cvarServices;
         _soundServices = soundServices;
+        _respawnServices = respawnServices;
     }
 
     public void Init()
@@ -118,8 +118,8 @@ public class Events : IEvents, IEventListener
             return;
         }
 
-        var zmClient = _player.GetOrCreatePlayer(client);
-        var zmAttacker = _player.GetOrCreatePlayer(attackerClient);
+        var zmClient = _playerManager.GetOrCreatePlayer(client);
+        var zmAttacker = _playerManager.GetOrCreatePlayer(attackerClient);
 
         if (zmClient.IsHuman() && zmAttacker.IsInfected())
         {
@@ -152,13 +152,15 @@ public class Events : IEvents, IEventListener
         if(client == null)
             return;
 
-        if(_player.GetOrCreatePlayer(client).IsInfected())
+        if(_playerManager.GetOrCreatePlayer(client).IsInfected())
         {
             var pawn = e.GetPlayerController("userid")?.GetPlayerPawn();
 
             if(pawn != null)
                 _soundServices.EmitZombieSound(pawn, "zr.amb.zombie_die");
         }
+
+        _respawnServices.OnPlayerDeath(client);
         //_modSharp.PrintChannelAll(HudPrintChannel.Chat, $"Client {client?.Name ?? "Unknown Player"} killed by {attackerClient?.Name ?? "Unknown Player"}");
     }
 
@@ -214,9 +216,28 @@ public class Events : IEvents, IEventListener
             // infect or
         _modSharp.PushTimer(() =>
         {
-            if (_infect.IsInfectStarted())
-                _infect.InfectPlayer(client);
+            var teamRespawn = _cvarServices.CvarList["Cvar_RespawnTeam"]?.GetInt32() ?? 0;
 
+            if (_infect.IsInfectStarted())
+            {
+                if(teamRespawn == 0)
+                    _infect.InfectPlayer(client);
+
+                else if(teamRespawn == 1)
+                    _infect.HumanizeClient(client);
+
+                else
+                {
+                    var zombie = _playerManager.GetOrCreatePlayer(client).IsInfected();
+
+                    if(zombie)
+                        _infect.InfectPlayer(client);
+
+                    else
+                        _infect.HumanizeClient(client);
+                }
+            }
+            // regardless of wtf happenned here, before infection start all player should be spawn as human.
             else
                 _infect.HumanizeClient(client);
 

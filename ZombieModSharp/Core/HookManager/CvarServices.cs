@@ -13,55 +13,73 @@ public class CvarServices : ICvarServices
     private readonly ISharedSystem _sharedSystem;
     private readonly IKnockback _knockback;
     private readonly IModSharp _modsharp;
+    private readonly IConVarManager _conVarManager;
     private readonly ILogger<CvarServices> _logger;
+    private readonly IRespawnServices _respawnServices;
 
     // Declare here I guess
     public Dictionary<string, IConVar?> CvarList { get; set; } = [];
 
-    public CvarServices(ISharedSystem sharedSystem, IKnockback knockback)
+    public CvarServices(ISharedSystem sharedSystem, IKnockback knockback, IRespawnServices respawnServices)
     {
         _sharedSystem = sharedSystem;
         _logger = _sharedSystem.GetLoggerFactory().CreateLogger<CvarServices>();
         _modsharp = _sharedSystem.GetModSharp();
+        _conVarManager = _sharedSystem.GetConVarManager();
         _knockback = knockback;
+        _respawnServices = respawnServices;
     }
     
     public void Init()
     {
         // we create convar 
-        var conVar = _sharedSystem.GetConVarManager();
-        CvarList["Cvar_HumanDefault"] = conVar.CreateConVar("zms_human_class_default", "human_default", "Default human class when player join", ConVarFlags.Release);
-        CvarList["Cvar_ZombieDefault"] = conVar.CreateConVar("zms_zombie_class_default", "zombie_default", "Default zombie class when player join", ConVarFlags.Release);
+        CvarList["Cvar_HumanDefault"] = _conVarManager.CreateConVar("zms_human_class_default", "human_default", "Default human class when player join", ConVarFlags.Release);
+        CvarList["Cvar_ZombieDefault"] = _conVarManager.CreateConVar("zms_zombie_class_default", "zombie_default", "Default zombie class when player join", ConVarFlags.Release);
 
-        CvarList["Cvar_InfectCountdown"] = conVar.CreateConVar("zms_infect_countdown", 10.0f, 5.0f, 60.0f, "Infection Countdown", ConVarFlags.Release);
-        CvarList["Cvar_InfectMotherZombieRatio"] = conVar.CreateConVar("zms_infect_motherzombie_ratio", 7.0f, 1.0f, 63.0f, "Motherzombie ratio for fist infection", ConVarFlags.Release);
-        CvarList["Cvar_InfectMinimumZombie"] = conVar.CreateConVar("zms_infect_minimum_zombie", 1, 1, 63, "Minimum zombie to spawn on first infection.", ConVarFlags.Release); 
-        CvarList["Cvar_InfectNoblockEnable"] =  conVar.CreateConVar("zms_infect_noblock_enable", true, "Enable noblock between player or not.", ConVarFlags.Release);
-        CvarList["Cvar_InfectMotherZombieSpawn"] = conVar.CreateConVar("zms_infect_motherzombie_spawn", true, "Teleport motherzombie back to spawn.", ConVarFlags.Release);
-        CvarList["Cvar_InfectKnockbackScale"] = conVar.CreateConVar("zms_infect_knockback_scale", 1.0f, 0.01f, 100.0f, "Knockback scale for modifying", ConVarFlags.Release);
-        CvarList["Cvar_InfectWarmupEnabled"] = conVar.CreateConVar("zms_infect_warmup_enabled", false, "Enable infection game during warmup or not", ConVarFlags.Release);
+        CvarList["Cvar_InfectCountdown"] = _conVarManager.CreateConVar("zms_infect_countdown", 10.0f, 5.0f, 60.0f, "Infection Countdown", ConVarFlags.Release);
+        CvarList["Cvar_InfectMotherZombieRatio"] = _conVarManager.CreateConVar("zms_infect_motherzombie_ratio", 7.0f, 1.0f, 63.0f, "Motherzombie ratio for fist infection", ConVarFlags.Release);
+        CvarList["Cvar_InfectMinimumZombie"] = _conVarManager.CreateConVar("zms_infect_minimum_zombie", 1, 1, 63, "Minimum zombie to spawn on first infection.", ConVarFlags.Release); 
+        CvarList["Cvar_InfectNoblockEnable"] =  _conVarManager.CreateConVar("zms_infect_noblock_enable", true, "Enable noblock between player or not.", ConVarFlags.Release);
+        CvarList["Cvar_InfectMotherZombieSpawn"] = _conVarManager.CreateConVar("zms_infect_motherzombie_spawn", true, "Teleport motherzombie back to spawn.", ConVarFlags.Release);
+        CvarList["Cvar_InfectKnockbackScale"] = _conVarManager.CreateConVar("zms_infect_knockback_scale", 1.0f, 0.01f, 100.0f, "Knockback scale for modifying", ConVarFlags.Release);
+        CvarList["Cvar_InfectWarmupEnabled"] = _conVarManager.CreateConVar("zms_infect_warmup_enabled", false, "Enable infection game during warmup or not", ConVarFlags.Release);
 
-        CvarList["Cvar_RespawnEnabled"] = conVar.CreateConVar("zms_respawn_enabled", true, "Enable respawn during the round.", ConVarFlags.Release);
-        CvarList["Cvar_RespawnDelay"] = conVar.CreateConVar("zms_respawn_delay", 5.0f, "Respawn Delay timer after death.", ConVarFlags.Release);
-        CvarList["Cvar_RespawnLateJoin"] = conVar.CreateConVar("zms_respawn_late_join", true, "Allow player to join during the round.", ConVarFlags.Release);
-        CvarList["Cvar_RespawnTeam"] = conVar.CreateConVar("zms_respawn_team", 0, "Respawn Team [0 = Zombie|1 = Human]", ConVarFlags.Release);
+        CvarList["Cvar_RespawnEnabled"] = _conVarManager.CreateConVar("zms_respawn_enabled", true, "Enable respawn during the round.", ConVarFlags.Release);
+        CvarList["Cvar_RespawnDelay"] = _conVarManager.CreateConVar("zms_respawn_delay", 5.0f, "Respawn Delay timer after death.", ConVarFlags.Release);
+        CvarList["Cvar_RespawnLateJoin"] = _conVarManager.CreateConVar("zms_respawn_late_join", true, "Allow player to join during the round.", ConVarFlags.Release);
+        CvarList["Cvar_RespawnTeam"] = _conVarManager.CreateConVar("zms_respawn_team", 0, 0, 2, "Respawn Team [0 = Zombie|1 = Human|2 = based on player team]", ConVarFlags.Release);
         
-        CvarList["Cvar_ZTeleAllow"] = conVar.CreateConVar("zms_ztele_allow", true, "Allow Ztele command or not", ConVarFlags.Release);
-        CvarList["Cvar_ZTeleDelay"] = conVar.CreateConVar("zms_ztele_delay", 5.0f, "Delay timer before player can get teleported with ztele command", ConVarFlags.Release);
+        CvarList["Cvar_ZTeleAllow"] = _conVarManager.CreateConVar("zms_ztele_allow", true, "Allow Ztele command or not", ConVarFlags.Release);
+        CvarList["Cvar_ZTeleDelay"] = _conVarManager.CreateConVar("zms_ztele_delay", 5.0f, "Delay timer before player can get teleported with ztele command", ConVarFlags.Release);
         // we check if covar existed or not.
 
-        conVar.InstallChangeHook(CvarList["Cvar_InfectKnockbackScale"]!, (convar) =>
-        {
-            if(convar.Name == "zms_infect_knockback_scale")
-            {
-                var scale = convar.GetFloat();
-                _knockback.SetKnockbackScale(scale);
-                _modsharp.PrintToChatAll($"ConVar: zms_infect_knockback_scale set to {scale}");
-                _logger.LogInformation("Scale is set to {scale}", scale);
-            }
-        });
+        _conVarManager.InstallChangeHook(CvarList["Cvar_InfectKnockbackScale"]!, OnConVarChange);
+        _conVarManager.InstallChangeHook(CvarList["Cvar_RespawnEnabled"]!, OnConVarChange);
 
         AutoExecConfigFile();
+    }
+
+    public void Shutdown()
+    {
+        _conVarManager.RemoveChangeHook(CvarList["Cvar_InfectKnockbackScale"]!, OnConVarChange);
+        _conVarManager.RemoveChangeHook(CvarList["Cvar_RespawnEnabled"]!, OnConVarChange);
+    }
+
+    private void OnConVarChange(IConVar convar)
+    {
+        if(convar.Name == "zms_infect_knockback_scale")
+        {
+            var scale = convar.GetFloat();
+            _knockback.SetKnockbackScale(scale);
+            _modsharp.PrintToChatAll($"ConVar: zms_infect_knockback_scale set to {scale}");
+            _logger.LogInformation("Scale is set to {scale}", scale);
+        }
+
+        if(convar.Name == "zms_respawn_enabled")
+        {
+            var enabled = convar.GetBool();
+            _respawnServices.SetRespawnEnable(enabled);
+        }
     }
 
     // we create convar file here.
