@@ -21,7 +21,7 @@ public class RespawnServices : IRespawnServices
         _cvarServices = cvarServices;
     }
 
-    public void OnPlayerDeath(IGameClient client)
+    public void InitRespawn(IGameClient client)
     {
         if(!RespawnEnabled)
             return;
@@ -45,6 +45,9 @@ public class RespawnServices : IRespawnServices
                 return;
 
         if(playerPawn.IsAlive)
+            return;
+
+        if(playerPawn.Team == CStrikeTeam.Spectator || playerPawn.Team == CStrikeTeam.UnAssigned)
             return;
 
         playerPawn.GetController()?.Respawn();

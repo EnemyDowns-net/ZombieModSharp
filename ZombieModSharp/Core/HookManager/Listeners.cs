@@ -3,7 +3,9 @@ using Sharp.Shared;
 using Sharp.Shared.Enums;
 using Sharp.Shared.GameEntities;
 using Sharp.Shared.Listeners;
+using Sharp.Shared.Managers;
 using Sharp.Shared.Objects;
+using Sharp.Shared.Types;
 using ZombieModSharp.Abstractions;
 using ZombieModSharp.Abstractions.Entities;
 using ZombieModSharp.Abstractions.Storage;
@@ -21,32 +23,40 @@ public class Listeners : IListeners, IClientListener, IGameListener, IEntityList
     private readonly ILogger<Listeners> _logger;
     private readonly IModSharp _modsharp;
     private readonly ISqliteDatabase _sqlite;
-    private readonly ICvarServices _cvar;
+    private readonly ICvarServices _cvarServices;
     private readonly IPlayerClasses _playerClasses;
     private readonly IPrecacheManager _precacheManager;
+    private readonly IRespawnServices _respawnServices;
 
-    public Listeners(IPlayerManager playerManager, ISharedSystem sharedSystem, ISqliteDatabase sqlite, ICvarServices cvar, IPlayerClasses playerClasses, IPrecacheManager precacheManager)
+    public Listeners(IPlayerManager playerManager, ISharedSystem sharedSystem, ISqliteDatabase sqlite, ICvarServices cvarServices, IPlayerClasses playerClasses, IPrecacheManager precacheManager, IRespawnServices respawnServices)
     {
         _playerManager = playerManager;
         _sharedSystem = sharedSystem;
         _logger = _sharedSystem.GetLoggerFactory().CreateLogger<Listeners>();
         _modsharp = _sharedSystem.GetModSharp();
         _sqlite = sqlite;
-        _cvar = cvar;
+        _cvarServices = cvarServices;
         _playerClasses = playerClasses;
         _precacheManager = precacheManager;
+        _respawnServices = respawnServices;
     }
 
     public void Init()
     {
-        _sharedSystem.GetClientManager().InstallClientListener(this);
+        var clientManager = _sharedSystem.GetClientManager();
+        clientManager.InstallClientListener(this);
+        clientManager.InstallCommandListener("jointeam", OnJoinTeamCommand);
+
         _sharedSystem.GetEntityManager().InstallEntityListener(this);
         _modsharp.InstallGameListener(this);
     }
 
     public void Shutdown()
     {
-        _sharedSystem.GetClientManager().RemoveClientListener(this);
+        var clientManager = _sharedSystem.GetClientManager();
+        clientManager.RemoveClientListener(this);
+        clientManager.RemoveCommandListener("jointeam", OnJoinTeamCommand);
+
         _sharedSystem.GetEntityManager().RemoveEntityListener(this);
         _modsharp.RemoveGameListener(this);
     }
@@ -71,8 +81,8 @@ public class Listeners : IListeners, IClientListener, IGameListener, IEntityList
             {
                 // _logger.LogInformation("Found nothing.");
 
-                humanClass = _cvar.CvarList["Cvar_HumanDefault"]!.GetString();
-                zombieClass = _cvar.CvarList["Cvar_ZombieDefault"]!.GetString();
+                humanClass = _cvarServices.CvarList["Cvar_HumanDefault"]!.GetString();
+                zombieClass = _cvarServices.CvarList["Cvar_ZombieDefault"]!.GetString();
 
                 // _logger.LogInformation("Try insert {human} | {zombie}", humanClass, zombieClass);
 
@@ -151,5 +161,20 @@ public class Listeners : IListeners, IClientListener, IGameListener, IEntityList
         {
             _modsharp.ServerCommand($"exec zombiemodsharp/{mapname}.cfg");
         }
+    }
+
+    private ECommandAction OnJoinTeamCommand(IGameClient client, StringCommand command)
+    {
+        var team = (CStrikeTeam)int.Parse(command.GetArg(1));
+
+        var allowJoinLate = _cvarServices.CvarList["Cvar_RespawnLateJoin"]?.GetBool() ?? false;
+
+        if(team == CStrikeTeam.TE || team == CStrikeTeam.CT)
+        {
+            if(allowJoinLate)
+                _respawnServices.InitRespawn(client);
+        }
+
+        return ECommandAction.Skipped;
     }
 }

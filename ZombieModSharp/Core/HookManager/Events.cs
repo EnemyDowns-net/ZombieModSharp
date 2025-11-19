@@ -160,7 +160,7 @@ public class Events : IEvents, IEventListener
                 _soundServices.EmitZombieSound(pawn, "zr.amb.zombie_die");
         }
 
-        _respawnServices.OnPlayerDeath(client);
+        _respawnServices.InitRespawn(client);
         //_modSharp.PrintChannelAll(HudPrintChannel.Chat, $"Client {client?.Name ?? "Unknown Player"} killed by {attackerClient?.Name ?? "Unknown Player"}");
     }
 
