@@ -15,14 +15,16 @@ public class Hooks : IHooks
     private readonly IHookManager _hookManager;
     private readonly IModSharp _modsharp;
     private readonly IEntityManager _entityManager;
+    private readonly IInfect _infect;
 
-    public Hooks(ISharedSystem sharedSystem, IPlayerManager playerManager)
+    public Hooks(ISharedSystem sharedSystem, IPlayerManager playerManager, IInfect infect)
     {
         _sharedSystem = sharedSystem;
         _playerManager = playerManager;
         _hookManager = _sharedSystem.GetHookManager();
         _modsharp = _sharedSystem.GetModSharp();
         _entityManager = _sharedSystem.GetEntityManager();
+        _infect = infect;
     }
 
     public void Init()

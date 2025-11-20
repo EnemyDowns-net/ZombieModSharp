@@ -5,8 +5,6 @@ namespace ZombieModSharp.Abstractions;
 
 public interface IRespawnServices
 {
-    public void InitRespawn(IGameClient client);
-    public void RespawnClient(IPlayerPawn? playerPawn);
-    public bool IsRespawnEnabled();
-    public void SetRespawnEnable(bool set = true);
+    public void InitRespawn(IPlayerController? client);
+    public void RespawnClient(IPlayerController client);
 }

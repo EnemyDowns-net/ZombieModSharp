@@ -172,7 +172,7 @@ public class Listeners : IListeners, IClientListener, IGameListener, IEntityList
         if(team == CStrikeTeam.TE || team == CStrikeTeam.CT)
         {
             if(allowJoinLate)
-                _respawnServices.InitRespawn(client);
+                _respawnServices.InitRespawn(client.GetPlayerController());
         }
 
         return ECommandAction.Skipped;

@@ -15,19 +15,17 @@ public class CvarServices : ICvarServices
     private readonly IModSharp _modsharp;
     private readonly IConVarManager _conVarManager;
     private readonly ILogger<CvarServices> _logger;
-    private readonly IRespawnServices _respawnServices;
 
     // Declare here I guess
     public Dictionary<string, IConVar?> CvarList { get; set; } = [];
 
-    public CvarServices(ISharedSystem sharedSystem, IKnockback knockback, IRespawnServices respawnServices)
+    public CvarServices(ISharedSystem sharedSystem, IKnockback knockback)
     {
         _sharedSystem = sharedSystem;
         _logger = _sharedSystem.GetLoggerFactory().CreateLogger<CvarServices>();
         _modsharp = _sharedSystem.GetModSharp();
         _conVarManager = _sharedSystem.GetConVarManager();
         _knockback = knockback;
-        _respawnServices = respawnServices;
     }
     
     public void Init()
@@ -78,7 +76,7 @@ public class CvarServices : ICvarServices
         if(convar.Name == "zms_respawn_enabled")
         {
             var enabled = convar.GetBool();
-            _respawnServices.SetRespawnEnable(enabled);
+            RespawnServices.SetRespawnEnable(enabled);
         }
     }
 

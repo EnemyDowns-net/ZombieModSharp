@@ -148,6 +148,7 @@ public class Events : IEvents, IEventListener
     {
         //_infect.CheckGameStatus();
         var client = e.GetPlayerController("userid")?.GetGameClient();
+        var controller = e.GetPlayerController("userid");
 
         if(client == null)
             return;
@@ -160,7 +161,8 @@ public class Events : IEvents, IEventListener
                 _soundServices.EmitZombieSound(pawn, "zr.amb.zombie_die");
         }
 
-        _respawnServices.InitRespawn(client);
+        _respawnServices.InitRespawn(controller);
+        _infect.CheckGameStatus();
         //_modSharp.PrintChannelAll(HudPrintChannel.Chat, $"Client {client?.Name ?? "Unknown Player"} killed by {attackerClient?.Name ?? "Unknown Player"}");
     }
 

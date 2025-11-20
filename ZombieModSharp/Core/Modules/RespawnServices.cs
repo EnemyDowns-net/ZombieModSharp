@@ -12,7 +12,7 @@ public class RespawnServices : IRespawnServices
     private readonly IModSharp _modsharp;
     private readonly ICvarServices _cvarServices;
 
-    private bool RespawnEnabled { get; set; } = true;
+    private static bool RespawnEnabled = true;
 
     public RespawnServices(ISharedSystem sharedSystem, ICvarServices cvarServices)
     {
@@ -21,44 +21,60 @@ public class RespawnServices : IRespawnServices
         _cvarServices = cvarServices;
     }
 
-    public void InitRespawn(IGameClient client)
+    public void InitRespawn(IPlayerController? client)
     {
-        if(!RespawnEnabled)
+        if(client == null)
+        {
             return;
+        }
+
+        if(!RespawnEnabled)
+        {
+            return;
+        }
 
         var delay = _cvarServices.CvarList["Cvar_RespawnDelay"]?.GetFloat() ?? 5.0f;
 
         _modsharp.PushTimer(() =>
         {
-            var playerpawn = client.GetPlayerController()?.GetPlayerPawn();
-            RespawnClient(playerpawn);
+            RespawnClient(client);
 
         }, delay, GameTimerFlags.StopOnRoundEnd|GameTimerFlags.StopOnMapEnd);
     }
 
-    public void RespawnClient(IPlayerPawn? playerPawn)
+    public void RespawnClient(IPlayerController client)
     {
         if(!RespawnEnabled)
+        {
             return;
+        }
+
+        var playerPawn = client.GetPlayerPawn();
 
         if(playerPawn == null)
-                return;
+        {
+            return;
+        }
 
         if(playerPawn.IsAlive)
+        {
             return;
+        }
 
         if(playerPawn.Team == CStrikeTeam.Spectator || playerPawn.Team == CStrikeTeam.UnAssigned)
+        {
             return;
+        }
 
-        playerPawn.GetController()?.Respawn();
+        client.Respawn();
     }
 
-    public bool IsRespawnEnabled()
+    public static bool IsRespawnEnabled()
     {
         return RespawnEnabled;
     }
 
-    public void SetRespawnEnable(bool set = true)
+    public static void SetRespawnEnable(bool set = true)
     {
         RespawnEnabled = set;
     }
