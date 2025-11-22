@@ -46,7 +46,8 @@ public class CvarServices : ICvarServices
         CvarList["Cvar_RespawnDelay"] = _conVarManager.CreateConVar("zms_respawn_delay", 5.0f, "Respawn Delay timer after death.", ConVarFlags.Release);
         CvarList["Cvar_RespawnLateJoin"] = _conVarManager.CreateConVar("zms_respawn_late_join", true, "Allow player to join during the round.", ConVarFlags.Release);
         CvarList["Cvar_RespawnTeam"] = _conVarManager.CreateConVar("zms_respawn_team", 0, 0, 2, "Respawn Team [0 = Zombie|1 = Human|2 = based on player team]", ConVarFlags.Release);
-        
+        CvarList["Cvar_RespawnTogglerEnable"] = _conVarManager.CreateConVar("zms_respawn_toggler_enabled", true, "Enabled respawn toggler for ZE map.", ConVarFlags.Release);
+
         CvarList["Cvar_ZTeleAllow"] = _conVarManager.CreateConVar("zms_ztele_allow", true, "Allow Ztele command or not", ConVarFlags.Release);
         CvarList["Cvar_ZTeleDelay"] = _conVarManager.CreateConVar("zms_ztele_delay", 5.0f, "Delay timer before player can get teleported with ztele command", ConVarFlags.Release);
         // we check if covar existed or not.

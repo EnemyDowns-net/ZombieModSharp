@@ -177,4 +177,34 @@ public class Listeners : IListeners, IClientListener, IGameListener, IEntityList
 
         return ECommandAction.Skipped;
     }
+
+    public EHookAction OnEntityAcceptInput(IBaseEntity entity, string input, in EntityVariant value, IBaseEntity? activator, IBaseEntity? caller)
+    {
+        if(_cvarServices.CvarList["Cvar_RespawnTogglerEnable"]?.GetBool() ?? false)
+            return EHookAction.Ignored;
+
+        var respawner = _respawnServices.GetRespawnToggler();
+        if(respawner == null || !respawner.IsValid())
+        {
+            _modsharp.PrintToChatAll("Toggler is fucking null");
+            return EHookAction.Ignored;
+        }
+
+        if(entity != respawner)
+        {
+            _modsharp.PrintToChatAll("It is not match");
+            return EHookAction.Ignored;
+        }
+
+        if (input == "Trigger")
+            RespawnServices.SetRespawnEnable(false);
+
+        else if ((input == "Enable") && !RespawnServices.IsRespawnEnabled())
+            RespawnServices.SetRespawnEnable();
+
+        else if ((input == "Disable") && RespawnServices.IsRespawnEnabled())
+            RespawnServices.SetRespawnEnable(false);
+
+        return EHookAction.Ignored;
+    }
 }

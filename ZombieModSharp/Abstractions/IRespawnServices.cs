@@ -7,4 +7,6 @@ public interface IRespawnServices
 {
     public void InitRespawn(IPlayerController? client);
     public void RespawnClient(IPlayerController client);
+    public void SetupRespawnToggler();
+    public IBaseEntity? GetRespawnToggler();
 }

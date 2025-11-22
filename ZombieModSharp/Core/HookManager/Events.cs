@@ -183,6 +183,9 @@ public class Events : IEvents, IEventListener
         RoundEnded = false;
         //_modSharp.PrintChannelAll(HudPrintChannel.Chat, $"The round just started");
         _infect.OnRoundStart();
+
+        if(_cvarServices.CvarList["Cvar_RespawnTogglerEnable"]?.GetBool() ?? false)
+            _respawnServices.SetupRespawnToggler();
     }
 
     private void OnRoundEnd(IGameEvent e)
