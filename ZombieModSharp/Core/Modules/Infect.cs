@@ -167,7 +167,7 @@ public class Infect : IInfect
             _modSharp.PrintChannelFilter(HudPrintChannel.Chat, $"{ZombieModSharp.Prefix} The merciful gods (known as admins) have resurrected your soul, find some cover!", new RecipientFilter(client));
 
         // implement model changed and health.
-        var pawn = clientController.GetPawn();
+        var pawn = clientController.GetPlayerPawn();
 
         if (pawn == null)
         {

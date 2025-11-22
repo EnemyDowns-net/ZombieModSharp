@@ -7,6 +7,7 @@ using Sharp.Shared.Managers;
 using Sharp.Shared.Objects;
 using Sharp.Shared.Units;
 using ZombieModSharp.Abstractions;
+using ZombieModSharp.Core.Modules;
 
 namespace ZombieModSharp.Core.HookManager;
 
@@ -183,6 +184,9 @@ public class Events : IEvents, IEventListener
         RoundEnded = false;
         //_modSharp.PrintChannelAll(HudPrintChannel.Chat, $"The round just started");
         _infect.OnRoundStart();
+
+        if(_cvarServices.CvarList["Cvar_RespawnEnabled"]?.GetBool() ?? false)
+            RespawnServices.SetRespawnEnable(true);
 
         if(_cvarServices.CvarList["Cvar_RespawnTogglerEnable"]?.GetBool() ?? false)
             _respawnServices.SetupRespawnToggler();

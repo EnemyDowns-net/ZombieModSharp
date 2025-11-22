@@ -15,8 +15,12 @@ namespace ZombieModSharp.Core.HookManager;
 
 public class Listeners : IListeners, IClientListener, IGameListener, IEntityListener
 {
-    public int ListenerVersion => IClientListener.ApiVersion;
-    public int ListenerPriority => 0;
+    int IClientListener.ListenerVersion  => IClientListener.ApiVersion;
+    int IClientListener.ListenerPriority => 0;
+    int IEntityListener.ListenerVersion  => IEntityListener.ApiVersion;
+    int IEntityListener.ListenerPriority => 0;
+    int IGameListener.ListenerVersion  => IGameListener.ApiVersion;
+    int IGameListener.ListenerPriority => 0;
 
     private readonly IPlayerManager _playerManager;
     private readonly ISharedSystem _sharedSystem;
@@ -27,6 +31,7 @@ public class Listeners : IListeners, IClientListener, IGameListener, IEntityList
     private readonly IPlayerClasses _playerClasses;
     private readonly IPrecacheManager _precacheManager;
     private readonly IRespawnServices _respawnServices;
+    private readonly IEntityManager _entityManager;
 
     public Listeners(IPlayerManager playerManager, ISharedSystem sharedSystem, ISqliteDatabase sqlite, ICvarServices cvarServices, IPlayerClasses playerClasses, IPrecacheManager precacheManager, IRespawnServices respawnServices)
     {
@@ -39,6 +44,7 @@ public class Listeners : IListeners, IClientListener, IGameListener, IEntityList
         _playerClasses = playerClasses;
         _precacheManager = precacheManager;
         _respawnServices = respawnServices;
+        _entityManager = _sharedSystem.GetEntityManager();
     }
 
     public void Init()
@@ -47,7 +53,10 @@ public class Listeners : IListeners, IClientListener, IGameListener, IEntityList
         clientManager.InstallClientListener(this);
         clientManager.InstallCommandListener("jointeam", OnJoinTeamCommand);
 
-        _sharedSystem.GetEntityManager().InstallEntityListener(this);
+        _entityManager.InstallEntityListener(this);
+        _entityManager.HookEntityInput("logic_relay", "Trigger");
+        _entityManager.HookEntityInput("logic_relay", "Enable");
+        _entityManager.HookEntityInput("logic_relay", "Disable");
         _modsharp.InstallGameListener(this);
     }
 
@@ -57,7 +66,7 @@ public class Listeners : IListeners, IClientListener, IGameListener, IEntityList
         clientManager.RemoveClientListener(this);
         clientManager.RemoveCommandListener("jointeam", OnJoinTeamCommand);
 
-        _sharedSystem.GetEntityManager().RemoveEntityListener(this);
+        _entityManager.RemoveEntityListener(this);
         _modsharp.RemoveGameListener(this);
     }
 
@@ -180,30 +189,35 @@ public class Listeners : IListeners, IClientListener, IGameListener, IEntityList
 
     public EHookAction OnEntityAcceptInput(IBaseEntity entity, string input, in EntityVariant value, IBaseEntity? activator, IBaseEntity? caller)
     {
-        if(_cvarServices.CvarList["Cvar_RespawnTogglerEnable"]?.GetBool() ?? false)
+        //_modsharp.PrintToChatAll($"Founded {entity.Name} {input}");
+
+        if(!_cvarServices.CvarList["Cvar_RespawnTogglerEnable"]?.GetBool() ?? false)
             return EHookAction.Ignored;
 
         var respawner = _respawnServices.GetRespawnToggler();
         if(respawner == null || !respawner.IsValid())
-        {
-            _modsharp.PrintToChatAll("Toggler is fucking null");
             return EHookAction.Ignored;
-        }
 
         if(entity != respawner)
-        {
-            _modsharp.PrintToChatAll("It is not match");
             return EHookAction.Ignored;
+
+        if (input.Equals("Trigger", StringComparison.OrdinalIgnoreCase))
+        {
+            _modsharp.PrintToChatAll($"{ZombieModSharp.Prefix} Respawn has been disabled!");
+            RespawnServices.SetRespawnEnable(false);
         }
 
-        if (input == "Trigger")
-            RespawnServices.SetRespawnEnable(false);
-
-        else if ((input == "Enable") && !RespawnServices.IsRespawnEnabled())
+        else if (input.Equals("Enable", StringComparison.OrdinalIgnoreCase) && !RespawnServices.IsRespawnEnabled())
+        {
+            _modsharp.PrintToChatAll($"{ZombieModSharp.Prefix} Respawn has been enabled!");
             RespawnServices.SetRespawnEnable();
+        }
 
-        else if ((input == "Disable") && RespawnServices.IsRespawnEnabled())
+        else if (input.Equals("Disable", StringComparison.OrdinalIgnoreCase) && RespawnServices.IsRespawnEnabled())
+        {
+            _modsharp.PrintToChatAll($"{ZombieModSharp.Prefix} Respawn has been disabled!");
             RespawnServices.SetRespawnEnable(false);
+        }
 
         return EHookAction.Ignored;
     }
