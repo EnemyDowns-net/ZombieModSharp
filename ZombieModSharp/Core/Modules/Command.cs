@@ -38,6 +38,7 @@ public class Command : ICommand
         _command.RegisterAdminCommand("infect", InfectCommand, "slay");
         _command.RegisterAdminCommand("human", HumanizeCommand, "slay");
         _command.RegisterClientCommand("zsound", ZSoundCommand);
+        _command.RegisterAdminCommand("togglerespawn", ToggleRespawnCommand, "slay");
     }
 
     private void ZTeleCommand(IGameClient client, StringCommand command)
@@ -168,8 +169,35 @@ public class Command : ICommand
         // whatever happened here is we will need to insert it.
         _modsharp.InvokeFrameActionAsync(async () => {
             var success = await _sqlite.InsertPlayerSoundAsync(client.SteamId.ToString(), player.SoundEnabled, volume);
-            ReplyToCommand(client, $"You have{(player.SoundEnabled ? "\x04 Enabled" : "\x04 Disabled")}\x01 zombie sound. {(player.SoundEnabled ? $"And set volume to {(int)player.SoundVolume}" : string.Empty)}");
+            ReplyToCommand(client, $"You have{(player.SoundEnabled ? "\x05 Enabled" : "\x07 Disabled")}\x01 zombie sound. {(player.SoundEnabled ? $"And set volume to\x06 {(int)player.SoundVolume}" : string.Empty)}");
         });
+    }
+
+    private void ToggleRespawnCommand(IGameClient client, StringCommand command)
+    {
+        if(command.ArgCount < 1)
+        {
+            var enabled = RespawnServices.IsRespawnEnabled();
+            RespawnServices.SetRespawnEnable(!enabled);
+
+            _modsharp.PrintToChatAll($"{ZombieModSharp.Prefix} Respawn has been{(!enabled ? "\x07 Disabled" : "\x05 Enabled")}");
+            return;
+        }
+
+        if(!int.TryParse(command.GetArg(1), out var arg))
+        {
+            ReplyToCommand(client, "Usage ms_togglerespawn <0-1>");
+            return;
+        }
+
+        if(arg > 1 || arg < 0)
+        {
+            ReplyToCommand(client, "Usage ms_togglerespawn <0-1>");
+            return;
+        }
+
+        RespawnServices.SetRespawnEnable(Convert.ToBoolean(arg));
+        _modsharp.PrintToChatAll($"{ZombieModSharp.Prefix} Respawn has been{(Convert.ToBoolean(arg) ? "\x05 Enabled" : "\x07 Disabled")}");
     }
 
     private void ReplyToCommand(IGameClient client, string text)
