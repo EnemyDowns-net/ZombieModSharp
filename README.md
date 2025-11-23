@@ -50,6 +50,11 @@ The project is continuous from **[ZombieSharp](https://github.com/oylsister/Zomb
 
 4. Start your server.
 
+5. in another config file will be generated at the path below. This config file contain ConVar and command for setup game condition and more.
+    ```
+    game/csgo/cfg/zombiemodsharp/zombiemodsharp.cfg
+    ```
+
 ### Configuration
 
 All configuration files are located in `game/csgo/sharp/configs/zombiemodsharp/`
