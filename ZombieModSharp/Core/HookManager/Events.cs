@@ -139,6 +139,16 @@ public class Events : IEvents, IEventListener
 
             if(pawn != null)
             {
+                if(Infect.CashMultiply > 0)
+                {
+                    var accountService = attackerClient.GetPlayerController()?.GetInGameMoneyService();
+
+                    if(accountService != null)
+                    {
+                        accountService.Account += (int)Math.Ceiling(damage * Infect.CashMultiply);
+                    }
+                }
+
                 _soundServices.ZombieHurtSound(pawn);
                 _knockback.KnockbackClient(client, attackerClient, weapon, damage, hitGroup);
             }

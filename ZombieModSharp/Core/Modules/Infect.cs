@@ -24,6 +24,7 @@ public class Infect : IInfect
     private readonly IZTele _ztele;
 
     private bool InfectStarted = false;
+    public static float CashMultiply = 1.0f;
 
     public Infect(ISharedSystem sharedSystem, ILogger<Infect> logger, IPlayerManager player, IPlayerClasses playerClasses, ICvarServices cvarServices, ISoundServices soundServices, IZTele zTele)
     {

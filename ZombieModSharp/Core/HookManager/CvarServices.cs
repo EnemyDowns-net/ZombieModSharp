@@ -41,6 +41,7 @@ public class CvarServices : ICvarServices
         CvarList["Cvar_InfectMotherZombieSpawn"] = _conVarManager.CreateConVar("zms_infect_motherzombie_spawn", true, "Teleport motherzombie back to spawn.", ConVarFlags.Release);
         CvarList["Cvar_InfectKnockbackScale"] = _conVarManager.CreateConVar("zms_infect_knockback_scale", 1.0f, 0.01f, 100.0f, "Knockback scale for modifying", ConVarFlags.Release);
         CvarList["Cvar_InfectWarmupEnabled"] = _conVarManager.CreateConVar("zms_infect_warmup_enabled", false, "Enable infection game during warmup or not", ConVarFlags.Release);
+        CvarList["Cvar_InfectDamageCash"] = _conVarManager.CreateConVar("zms_infect_damage_cash", 1.0f, 0.0f, 100.0f, "Multiplier cash that will receive when damage the zombie.", ConVarFlags.Release);
 
         CvarList["Cvar_RespawnEnabled"] = _conVarManager.CreateConVar("zms_respawn_enabled", true, "Enable respawn during the round.", ConVarFlags.Release);
         CvarList["Cvar_RespawnDelay"] = _conVarManager.CreateConVar("zms_respawn_delay", 5.0f, "Respawn Delay timer after death.", ConVarFlags.Release);
@@ -54,6 +55,7 @@ public class CvarServices : ICvarServices
 
         _conVarManager.InstallChangeHook(CvarList["Cvar_InfectKnockbackScale"]!, OnConVarChange);
         _conVarManager.InstallChangeHook(CvarList["Cvar_RespawnEnabled"]!, OnConVarChange);
+        _conVarManager.InstallChangeHook(CvarList["Cvar_InfectDamageCash"]!, OnConVarChange);
 
         AutoExecConfigFile();
     }
@@ -62,6 +64,7 @@ public class CvarServices : ICvarServices
     {
         _conVarManager.RemoveChangeHook(CvarList["Cvar_InfectKnockbackScale"]!, OnConVarChange);
         _conVarManager.RemoveChangeHook(CvarList["Cvar_RespawnEnabled"]!, OnConVarChange);
+        _conVarManager.RemoveChangeHook(CvarList["Cvar_InfectDamageCash"]!, OnConVarChange);
     }
 
     private void OnConVarChange(IConVar convar)
@@ -78,6 +81,11 @@ public class CvarServices : ICvarServices
         {
             var enabled = convar.GetBool();
             RespawnServices.SetRespawnEnable(enabled);
+        }
+
+        if(convar.Name == "zms_infect_damage_cash")
+        {
+            Infect.CashMultiply = convar.GetFloat();
         }
     }
 
