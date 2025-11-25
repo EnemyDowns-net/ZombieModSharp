@@ -31,13 +31,14 @@ public class Hooks : IHooks
     {
         _hookManager.PlayerWeaponCanEquip.InstallHookPre(OnCanEquip);
         _hookManager.PlayerGetMaxSpeed.InstallHookPre(OnGetMaxSpeed);
-        // _hookManager.PlayerDispatchTraceAttack.InstallHookPost(OnTakeDamaged);
+        _hookManager.PlayerDispatchTraceAttack.InstallHookPost(OnTakeDamaged);
     }
 
     public void Shutdown()
     {
         _hookManager.PlayerWeaponCanEquip.RemoveHookPre(OnCanEquip);
         _hookManager.PlayerGetMaxSpeed.RemoveHookPre(OnGetMaxSpeed);
+        _hookManager.PlayerDispatchTraceAttack.RemoveHookPost(OnTakeDamaged);
     }
 
     private HookReturnValue<float> OnGetMaxSpeed(IPlayerGetMaxSpeedHookParams param, HookReturnValue<float> result)
@@ -95,16 +96,7 @@ public class Hooks : IHooks
             _modsharp.PrintToChatAll("Client is null!");
             return;
         }
-
-        var hitGroup = param.HitGroup;
-        var damage = param.Damage;
+        
         var weaponEnt = _entityManager.FindEntityByHandle(param.InflictorHandle);
-
-        _modsharp.PrintToChatAll($"Classname: {weaponEnt?.Classname}");
-
-        if (weaponEnt?.Classname.Contains("weapon", StringComparison.OrdinalIgnoreCase) ?? false)
-        {
-            _modsharp.PrintToChatAll("It's Weapon!");
-        }
     }
 }
