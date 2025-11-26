@@ -32,6 +32,7 @@ public class Hooks : IHooks
         _hookManager.PlayerWeaponCanEquip.InstallHookPre(OnCanEquip);
         _hookManager.PlayerGetMaxSpeed.InstallHookPre(OnGetMaxSpeed);
         _hookManager.PlayerDispatchTraceAttack.InstallHookPost(OnTakeDamaged);
+        _hookManager.GiveNamedItem.InstallHookPost(OnGiveNamedItemPost);
     }
 
     public void Shutdown()
@@ -39,6 +40,7 @@ public class Hooks : IHooks
         _hookManager.PlayerWeaponCanEquip.RemoveHookPre(OnCanEquip);
         _hookManager.PlayerGetMaxSpeed.RemoveHookPre(OnGetMaxSpeed);
         _hookManager.PlayerDispatchTraceAttack.RemoveHookPost(OnTakeDamaged);
+        _hookManager.GiveNamedItem.RemoveHookPost(OnGiveNamedItemPost);
     }
 
     private HookReturnValue<float> OnGetMaxSpeed(IPlayerGetMaxSpeedHookParams param, HookReturnValue<float> result)
@@ -98,5 +100,18 @@ public class Hooks : IHooks
         }
         
         var weaponEnt = _entityManager.FindEntityByHandle(param.InflictorHandle);
+    }
+
+    private void OnGiveNamedItemPost(IGiveNamedItemHookParams param, HookReturnValue<IBaseWeapon> result)
+    {
+        /*
+        if(result.ReturnValue != null || (result.ReturnValue?.IsValid() ?? false))
+        {
+            _modsharp.PushTimer(() => {
+                result.ReturnValue.GetWeaponData().PrimaryReserveAmmoMax = 1200;
+                result.ReturnValue.ReserveAmmo = 1200;
+            }, 1.0f);
+        }
+        */
     }
 }

@@ -133,26 +133,7 @@ public class Listeners : IListeners, IClientListener, IGameListener, IEntityList
 
         _playerManager.RemovePlayer(client);
     }
-
-    public void OnEntityCreated(IBaseEntity entity)
-    {
-        if(entity.Classname.Contains("weapon_"))
-        {
-            // _modsharp.PrintToChatAll($"Found {entity.Classname}");
-            try {
-                _modsharp.PushTimer(() => {
-                    var weapon = entity.As<IBaseWeapon>();
-                    weapon.GetWeaponData().PrimaryReserveAmmoMax = 1200;
-                    weapon.ReserveAmmo = 1200;
-                }, 0.07, GameTimerFlags.None|GameTimerFlags.StopOnRoundEnd|GameTimerFlags.StopOnMapEnd);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("Error: {ex}", ex.Message);
-            }
-        }
-    }
-
+    
     public void OnResourcePrecache()
     {
         // _logger.LogInformation("Precache GoldShip Here");
