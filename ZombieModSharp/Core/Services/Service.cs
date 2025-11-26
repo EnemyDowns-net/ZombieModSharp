@@ -24,7 +24,8 @@ public static class ServiceCollectionExtensions
             .AddSingleton<IPlayerClasses, PlayerClasses>()
             .AddSingleton<IPrecacheManager, PrecacheManager>()
             .AddSingleton<ISoundServices, SoundServices>()
-            .AddSingleton<IRespawnServices, RespawnServices>();
+            .AddSingleton<IRespawnServices, RespawnServices>()
+            .AddSingleton<IGrenadeEffect, GrenadeEffect>();
 
         return services;
     }

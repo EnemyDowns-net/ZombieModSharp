@@ -1,15 +1,14 @@
 using Microsoft.Extensions.Logging;
 using Sharp.Shared;
+using Sharp.Shared.Enums;
 using Sharp.Shared.GameEntities;
-using Sharp.Shared.GameObjects;
 using Sharp.Shared.Managers;
-using Sharp.Shared.Objects;
 using Sharp.Shared.Types;
 using ZombieModSharp.Abstractions;
 
 namespace ZombieModSharp.Core.Modules;
 
-public class GrenadeEffect
+public class GrenadeEffect : IGrenadeEffect
 {
     private readonly IPlayerManager _playerManager;
     private readonly ISharedSystem _sharedSystem;
@@ -26,12 +25,12 @@ public class GrenadeEffect
         _logger = _sharedSystem.GetLoggerFactory().CreateLogger<GrenadeEffect>();
     }
 
-    public bool IgnitePawn(IPlayerPawn victimPawn,  int damage = 1, float duration = 1)
+    public bool IgnitePawn(IPlayerPawn? playerPawn, int damage = 1, float duration = 1)
     {
-        if(victimPawn == null)
+        if(playerPawn == null)
             return false;
 
-        var particle = _entityManager.FindEntityByHandle(victimPawn.EffectEntityHandle)?.As<IBaseParticle>();
+        var particle = _entityManager.FindEntityByHandle(playerPawn.EffectEntityHandle)?.As<IBaseParticle>();
 
         if(particle != null)
         {
@@ -39,21 +38,56 @@ public class GrenadeEffect
             return true;
         }
 
-        particle = _entityManager.CreateEntityByName<IBaseParticle>("info_particle_system");
+        var kv = new Dictionary<string, KeyValuesVariantValueItem>
+        {
+            { "effect_name", "particles/cs2fixes/napalm_fire.vpcf" },
+            { "start_active", 1 },
+        };
+
+        particle = _entityManager.SpawnEntitySync<IBaseParticle>("info_particle_system", kv);
         
         try 
         {
-            particle!.StartActive = true;
-            particle.GetControlPointEntities()[0] = victimPawn.Handle;
+            if(particle == null)
+            {
+                _modsharp.PrintToChatAll("Is fucking null");
+                return false;
+            }
+
+            particle.GetControlPointEntities()[0] = playerPawn.Handle;
             particle.DissolveStartTime = _modsharp.GetGlobals().CurTime + duration;
-            particle.Teleport(victimPawn.GetAbsOrigin());
+            particle.Teleport(playerPawn.GetAbsOrigin());
+            particle.AcceptInput("SetParent", playerPawn, null, "!activator");
 
-            particle.DispatchSpawn();
-            particle.AcceptInput("SetParent", victimPawn, null, "!activator");
+            _modsharp.PrintToChatAll("It does work for some reason");
 
-            victimPawn.EffectEntityHandle = particle.Handle;
+            playerPawn.EffectEntityHandle = particle.Handle;
 
-            DamagePrompt(victimPawn, damage);
+            _modsharp.PushTimer(new Func<TimerAction>(() => 
+            {
+                if(playerPawn == null || !playerPawn.IsValid())
+                    return TimerAction.Stop;
+
+                if(particle == null || !particle.IsValidEntity)
+                    return TimerAction.Stop;
+
+                if(!particle.Classname.StartsWith("info_part"))
+                {
+                    _logger.LogError("Unexpceted entity is found in particle.");
+                    return TimerAction.Stop;
+                }
+
+                if(particle.DissolveStartTime <= _modsharp.GetGlobals().CurTime || !playerPawn.IsAlive)
+                {
+                    particle.AcceptInput("Stop");
+                    particle.AddIOEvent(0.1f, "Kill");
+                    return TimerAction.Stop;
+                }
+
+                ApplyDamage(playerPawn, damage);
+                playerPawn.VelocityModifier = 40.0f / 100.0f;
+                return TimerAction.Continue;
+            }), 0.5, GameTimerFlags.Repeatable|GameTimerFlags.StopOnRoundEnd|GameTimerFlags.StopOnMapEnd);
         }
         catch (Exception ex)
         {
@@ -64,8 +98,15 @@ public class GrenadeEffect
         return true;
     }
 
-    private void DamagePrompt(IPlayerPawn playerPawn, int damage)
+    private void ApplyDamage(IPlayerPawn playerPawn, int damage)
     {
-        // TakeDamageInfo.CreateFromFire()
+        playerPawn.DispatchTraceAttack(new TakeDamageInfo
+        {
+            Inflictor = playerPawn.Handle,
+            Ability = playerPawn.Handle,
+            Damage = damage,
+            DamageType = DamageFlagBits.Fall,
+            TakeDamageFlags = TakeDamageFlags.IgnoreArmor
+        }, true);
     }
 }
