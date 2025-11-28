@@ -13,6 +13,7 @@ public class ClassAttribute
     public bool MotherZombie { get; set; } = false;
     public string Model { get; set; } = "default";
     public int Health { get; set; } = 100;
+    public float NapalmDuration { get; set; } = 0.0f;
     public float Knockback { get; set; } = 3.0f;
     public float Speed { get; set; } = 250f;
 }

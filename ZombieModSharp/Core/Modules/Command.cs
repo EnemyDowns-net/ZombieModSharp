@@ -19,8 +19,9 @@ public class Command : ICommand
     private readonly ICommandManager _command;
     private readonly ISqliteDatabase _sqlite;
     private readonly ICvarServices _cvarServices;
+    private readonly IGrenadeEffect _grenadeEffect;
 
-    public Command(IPlayerManager player, IZTele ztele, IInfect infect, ISharedSystem sharedSystem, ICommandManager command, ISqliteDatabase sqlite, ICvarServices cvarServices)
+    public Command(IPlayerManager player, IZTele ztele, IInfect infect, ISharedSystem sharedSystem, ICommandManager command, ISqliteDatabase sqlite, ICvarServices cvarServices, IGrenadeEffect grenadeEffect)
     {
         _player = player;
         _ztele = ztele;
@@ -30,6 +31,7 @@ public class Command : ICommand
         _command = command;
         _sqlite = sqlite;
         _cvarServices = cvarServices;
+        _grenadeEffect = grenadeEffect;
     }
 
     public void PostInit()
@@ -39,6 +41,7 @@ public class Command : ICommand
         _command.RegisterAdminCommand("human", HumanizeCommand, "slay");
         _command.RegisterClientCommand("zsound", ZSoundCommand);
         _command.RegisterAdminCommand("togglerespawn", ToggleRespawnCommand, "slay");
+        _command.RegisterAdminCommand("burnme", BurnTestCommand, "slay");
     }
 
     private void ZTeleCommand(IGameClient client, StringCommand command)
@@ -198,6 +201,14 @@ public class Command : ICommand
 
         RespawnServices.SetRespawnEnable(Convert.ToBoolean(arg));
         _modsharp.PrintToChatAll($"{ZombieModSharp.Prefix} Respawn has been{(Convert.ToBoolean(arg) ? "\x05 Enabled" : "\x07 Disabled")}");
+    }
+
+    private void BurnTestCommand(IGameClient client, StringCommand command)
+    {
+        var player = client.GetPlayerController()?.GetPlayerPawn();
+
+        ReplyToCommand(client, "Test burn");
+        _grenadeEffect.IgnitePawn(player, 1, 5);
     }
 
     private void ReplyToCommand(IGameClient client, string text)

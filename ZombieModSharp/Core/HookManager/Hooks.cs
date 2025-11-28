@@ -16,8 +16,9 @@ public class Hooks : IHooks
     private readonly IModSharp _modsharp;
     private readonly IEntityManager _entityManager;
     private readonly IInfect _infect;
+    private readonly IGrenadeEffect _grenadeEffect;
 
-    public Hooks(ISharedSystem sharedSystem, IPlayerManager playerManager, IInfect infect)
+    public Hooks(ISharedSystem sharedSystem, IPlayerManager playerManager, IInfect infect, IGrenadeEffect grenadeEffect)
     {
         _sharedSystem = sharedSystem;
         _playerManager = playerManager;
@@ -25,13 +26,14 @@ public class Hooks : IHooks
         _modsharp = _sharedSystem.GetModSharp();
         _entityManager = _sharedSystem.GetEntityManager();
         _infect = infect;
+        _grenadeEffect = grenadeEffect;
     }
 
     public void Init()
     {
         _hookManager.PlayerWeaponCanEquip.InstallHookPre(OnCanEquip);
         _hookManager.PlayerGetMaxSpeed.InstallHookPre(OnGetMaxSpeed);
-        _hookManager.PlayerDispatchTraceAttack.InstallHookPost(OnTakeDamaged);
+        _hookManager.PlayerDispatchTraceAttack.InstallHookPre(OnTakeDamage);
         _hookManager.GiveNamedItem.InstallHookPost(OnGiveNamedItemPost);
     }
 
@@ -39,7 +41,7 @@ public class Hooks : IHooks
     {
         _hookManager.PlayerWeaponCanEquip.RemoveHookPre(OnCanEquip);
         _hookManager.PlayerGetMaxSpeed.RemoveHookPre(OnGetMaxSpeed);
-        _hookManager.PlayerDispatchTraceAttack.RemoveHookPost(OnTakeDamaged);
+        _hookManager.PlayerDispatchTraceAttack.RemoveHookPre(OnTakeDamage);
         _hookManager.GiveNamedItem.RemoveHookPost(OnGiveNamedItemPost);
     }
 
@@ -81,25 +83,40 @@ public class Hooks : IHooks
         return result;
     }
 
-    private void OnTakeDamaged(IPlayerDispatchTraceAttackHookParams param, HookReturnValue<long> result)
+    private HookReturnValue<long> OnTakeDamage(IPlayerDispatchTraceAttackHookParams param, HookReturnValue<long> result)
     {
-        var attacker = _entityManager.FindEntityByHandle(param.AttackerHandle)?.As<IPlayerController>();
+        var attacker = _entityManager.FindEntityByHandle(param.AttackerPawnHandle)?.GetOriginalController()?.GetGameClient();
 
-        if (attacker == null)
+        var client = param.Controller.GetGameClient();
+        if (attacker == null || client == null)
         {
-            _modsharp.PrintToChatAll("Attacker is null!");
-            return;
+            return result;
+        }
+        var attackerPlayer = _playerManager.GetOrCreatePlayer(attacker);
+        var victimPlayer = _playerManager.GetOrCreatePlayer(client);
+
+        // prevent infected stab to death for humans.
+        if(attackerPlayer.IsInfected() && victimPlayer.IsHuman())
+        {
+            param.Damage = 1;
+            return result;
         }
 
-        var client = param.Controller;
-
-        if (client == null)
+        if(attackerPlayer.IsHuman() && victimPlayer.IsInfected())
         {
-            _modsharp.PrintToChatAll("Client is null!");
-            return;
+            var inflictor = _entityManager.FindEntityByHandle(param.InflictorHandle);
+            if(inflictor?.Classname.Contains("hegrenade") ?? false)
+            {
+                var duration = victimPlayer.ActiveClass?.NapalmDuration ?? 0.0f;
+
+                if(duration > 0.0f)
+                {
+                    _grenadeEffect.IgnitePawn(param.Pawn, (int)param.Damage, duration);
+                }
+            }
         }
-        
-        var weaponEnt = _entityManager.FindEntityByHandle(param.InflictorHandle);
+
+        return result;
     }
 
     private void OnGiveNamedItemPost(IGiveNamedItemHookParams param, HookReturnValue<IBaseWeapon> result)

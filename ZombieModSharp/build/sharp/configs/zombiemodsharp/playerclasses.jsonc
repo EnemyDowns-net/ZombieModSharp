@@ -5,6 +5,7 @@
         "MotherZombie": false,
         "Model": "characters/models/s2ze/zombie_frozen/zombie_frozen.vmdl",
         "Health": 8000,
+        "NapalmDuration" : 5.0,
         "Knockback": 0.0,
         "Speed": 250.0
     },
